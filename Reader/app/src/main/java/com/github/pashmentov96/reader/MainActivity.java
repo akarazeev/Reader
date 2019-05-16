@@ -4,21 +4,30 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
 
 import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
 
 public class MainActivity extends AppCompatActivity {
@@ -97,9 +106,38 @@ public class MainActivity extends AppCompatActivity {
                 if (book != null) {
                     Log.d("MyLogs", book.getTitle());
                     Log.d("MyLogs", "Metadata: " + book.getMetadata().getPublishers());
+                    Log.d("MyLogs", String.valueOf(book.getTableOfContents().size()));
+                    Log.d("MyLogs", String.valueOf(book.getContents().size()));
+
+                    logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
                 }
-                Log.d("MyLogs", "Data: " + data.getDataString());
             }
+        }
+    }
+
+    private void logTableOfContents(List<TOCReference> tocReferences, int depth) {
+        if (tocReferences == null) {
+            return;
+        }
+        for (TOCReference tocReference : tocReferences) {
+            StringBuilder tocString = new StringBuilder();
+            for (int i = 0; i < depth; i++) {
+                tocString.append("\t");
+            }
+            try{
+                InputStream is = tocReference.getResource().getInputStream();
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                String line;
+                while ((line = r.readLine()) != null) {
+                    line = Html.fromHtml(line).toString();
+                    Log.d("Book", line);
+                }
+            }
+            catch(IOException e){
+
+            }
+
+            //logTableOfContents(tocReference.getChildren(), depth + 1);
         }
     }
 
