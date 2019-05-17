@@ -13,10 +13,15 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -29,11 +34,14 @@ import java.util.List;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
+import nl.siegmann.epublib.epub.Main;
 
 public class MainActivity extends AppCompatActivity {
 
     Button buttonHistory;
     Button buttonOpen;
+
+    TextView textView;
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
@@ -51,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         buttonHistory = findViewById(R.id.button_history);
         buttonOpen = findViewById(R.id.button_open);
+        textView = findViewById(R.id.textView);
 
         View.OnClickListener onClickButtonHistory = new View.OnClickListener() {
             @Override
@@ -74,7 +83,24 @@ public class MainActivity extends AppCompatActivity {
 
         buttonOpen.setOnClickListener(onClickButtonOpen);
 
+        String text = textView.getText().toString();
+        SpannableStringBuilder ssBuilder = new SpannableStringBuilder(text);
 
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                Toast.makeText(MainActivity.this, "Later", Toast.LENGTH_LONG).show();
+            }
+        };
+
+        ssBuilder.setSpan(
+                clickableSpan,
+                text.indexOf("Nikita"),
+                text.indexOf("Nikita") + "Nikita".length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        textView.setText(ssBuilder);
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override
