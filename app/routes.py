@@ -1,6 +1,22 @@
 from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
+from flask import jsonify
+
+
+class UserData:
+    def __init__(self):
+        self.word_list = list()
+
+    def add_word(self, word):
+        word = word.lower()
+        if word not in self.word_list:
+            self.word_list.append(word)
+
+    def remove_word(self, word):
+        word = word.lower()
+        if word in self.word_list:
+            self.word_list.remove(word)
 
 
 @app.route('/')
@@ -28,3 +44,9 @@ def login():
             form.username.data, form.remember_me.data))
         return redirect('/index')
     return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route('/add/<word>', methods=['GET', 'POST'])
+def add(word):
+    res = jsonify(word=word)
+    return res
