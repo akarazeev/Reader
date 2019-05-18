@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <p>Sorted by: First letter</p>
+
+    {% if wordlist %}
+        {% for word in wordlist %}
+            <div>
+                <p>
+                    <b>{{ word }}</b> [<a href="/remove/{{ word }}">remove</a>]
+                </p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>
+            <b>There are no words</b>
+        </p>
+    {% endif %}
+
+{% endblock %}

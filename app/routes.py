@@ -1,7 +1,6 @@
-from flask import render_template, flash, redirect
+from flask import render_template, flash, redirect, jsonify, url_for
 from app import app
 from app.forms import LoginForm
-from flask import jsonify
 
 
 class UserData:
@@ -21,23 +20,25 @@ class UserData:
 
 users = dict(test=UserData())
 username = 'test'
+users[username].wordlist = ["one", "two", "five", "41", "hello"]
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('index.html', title='Home', user=user, posts=posts)
+    test_text = "Hello my 41 hello, how are 41 you hello. How are you doing?"
+    splitted_test_text = test_text.split()
+
+    highlights = [0] * len(splitted_test_text)
+    words_to_highlight = users[username].wordlist
+    words_to_highlight = [x.lower() for x in words_to_highlight]
+
+    for w in words_to_highlight:
+        for i in range(len(splitted_test_text)):
+            if w == splitted_test_text[i].lower():
+                highlights[i] = 1
+
+    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -50,23 +51,56 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-@app.route('/add/<word>', methods=['GET', 'POST'])
-def add(word):
+# API Section.
+
+@app.route('/api/add/<word>', methods=['GET', 'POST'])
+def api_add(word):
     users[username].add_word(word)
-    res = jsonify(word=word)
-    return res
+    return word
 
 
-@app.route('/remove/<word>', methods=['GET', 'POST'])
-def remove(word):
+@app.route('/api/remove/<word>', methods=['GET', 'POST'])
+def api_remove(word):
     users[username].remove_word(word)
-    res = jsonify(word=word)
-    return res
+    return word
 
 
-@app.route('/wordlist', methods=['GET', 'POST'])
-def get_wordlist():
+@app.route('/api/wordlist', methods=['GET', 'POST'])
+def api_wordlist():
     wordlist = users[username].wordlist
     res = jsonify(wordlist=wordlist)
     return res
 
+
+# Reading Section.
+
+@app.route('/reading/add/<word>', methods=['GET', 'POST'])
+def reading_add(word):
+    users[username].add_word(word)
+    return redirect(url_for("index"))
+
+
+@app.route('/reading/remove/<word>', methods=['GET', 'POST'])
+def reading_remove(word):
+    users[username].remove_word(word)
+    return redirect(url_for("index"))
+
+
+# Web Section.
+
+@app.route('/wordlist', methods=['GET', 'POST'])
+def web_wordlist():
+    wordlist = users[username].wordlist
+    wordlist = sorted(wordlist)
+
+    if len(wordlist) == 0:
+        wordlist = None
+
+    return render_template('wordlist.html', title='List of Words', wordlist=wordlist)
+
+
+@app.route('/remove/<word>', methods=['GET', 'POST'])
+def web_remove(word):
+    api_remove(word)
+    web_wordlist()
+    return redirect(url_for("web_wordlist"))

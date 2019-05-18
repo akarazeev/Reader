@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hi, {{ user.username }}!</h1>
-    {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
-    {% endfor %}
+
+    {% if splitted_text %}
+        <p>
+            {% for word, highlight in splitted_text %}
+                {% if highlight == 1 %}
+                    <a class="text" style="background-color: yellow" title="[translation]" href="/reading/remove/{{ word }}">{{ word }}</a>
+                {% else %}
+                    <a class="text" title="[translation]" href="/reading/add/{{ word }}">{{ word }}</a>
+                {% endif %}
+            {% endfor %}
+        </p>
+    {% endif %}
 {% endblock %}
