@@ -20,13 +20,13 @@ class UserData:
 
 users = dict(test=UserData())
 username = 'test'
-users[username].wordlist = ["one", "two", "five", "41", "hello"]
+users[username].wordlist = ["one", "two", "superfluidity", "41"]
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    test_text = "Hello my 41 hello, how are 41 you hello. How are you doing?"
+    test_text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau."
     splitted_test_text = test_text.split()
 
     highlights = [0] * len(splitted_test_text)
@@ -38,7 +38,9 @@ def index():
             if w == splitted_test_text[i].lower():
                 highlights[i] = 1
 
-    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights))
+    wordlist = prepare_wordlist()
+
+    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights), wordlist=wordlist)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -90,13 +92,9 @@ def reading_remove(word):
 
 @app.route('/wordlist', methods=['GET', 'POST'])
 def web_wordlist():
-    wordlist = users[username].wordlist
-    wordlist = sorted(wordlist)
+    wordlist = prepare_wordlist()
 
-    if len(wordlist) == 0:
-        wordlist = None
-
-    return render_template('wordlist.html', title='List of Words', wordlist=wordlist)
+    return render_template('wordlist_page.html', title='List of Words', wordlist=wordlist)
 
 
 @app.route('/remove/<word>', methods=['GET', 'POST'])
@@ -104,3 +102,16 @@ def web_remove(word):
     api_remove(word)
     web_wordlist()
     return redirect(url_for("web_wordlist"))
+
+
+# Utils.
+
+def prepare_wordlist():
+    wordlist = users[username].wordlist
+    wordlist = [x.capitalize() for x in wordlist]
+    wordlist = sorted(wordlist)
+
+    if len(wordlist) == 0:
+        wordlist = None
+
+    return wordlist

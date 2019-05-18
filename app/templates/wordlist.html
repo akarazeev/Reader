@@ -1,21 +1,15 @@
-{% extends "base.html" %}
+<p>Sorted by: First letter</p>
 
-{% block content %}
-
-    <p>Sorted by: First letter</p>
-
-    {% if wordlist %}
-        {% for word in wordlist %}
-            <div>
-                <p>
-                    <b>{{ word }}</b> [<a href="/remove/{{ word }}">remove</a>]
-                </p>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>
-            <b>There are no words</b>
-        </p>
-    {% endif %}
-
-{% endblock %}
+{% if wordlist %}
+    {% for word in wordlist %}
+        <div>
+            <p>
+                <b>{{ word }}</b> &mdash; [translation (TODO)] [<a href="/remove/{{ word }}">remove</a>]
+            </p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>
+        <b>There are no words</b>
+    </p>
+{% endif %}

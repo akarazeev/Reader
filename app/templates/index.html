@@ -1,16 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-
     {% if splitted_text %}
+        <h3>Sample Text:</h3>
         <p>
             {% for word, highlight in splitted_text %}
                 {% if highlight == 1 %}
-                    <a class="text" style="background-color: yellow" title="[translation]" href="/reading/remove/{{ word }}">{{ word }}</a>
+                    <a class="text" title="[translation]" href="/reading/remove/{{ word }}" style="background-color: yellow">{{ word }}</a>
                 {% else %}
                     <a class="text" title="[translation]" href="/reading/add/{{ word }}">{{ word }}</a>
                 {% endif %}
             {% endfor %}
         </p>
     {% endif %}
+
+    <hr>
+
+    <h3>List of Words</h3>
+
+    {% include "wordlist.html" %}
 {% endblock %}
