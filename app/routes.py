@@ -6,17 +6,21 @@ from flask import jsonify
 
 class UserData:
     def __init__(self):
-        self.word_list = list()
+        self.wordlist = list()
 
     def add_word(self, word):
         word = word.lower()
-        if word not in self.word_list:
-            self.word_list.append(word)
+        if word not in self.wordlist:
+            self.wordlist.append(word)
 
     def remove_word(self, word):
         word = word.lower()
-        if word in self.word_list:
-            self.word_list.remove(word)
+        if word in self.wordlist:
+            self.wordlist.remove(word)
+
+
+users = dict(test=UserData())
+username = 'test'
 
 
 @app.route('/')
@@ -48,5 +52,21 @@ def login():
 
 @app.route('/add/<word>', methods=['GET', 'POST'])
 def add(word):
+    users[username].add_word(word)
     res = jsonify(word=word)
     return res
+
+
+@app.route('/remove/<word>', methods=['GET', 'POST'])
+def remove(word):
+    users[username].remove_word(word)
+    res = jsonify(word=word)
+    return res
+
+
+@app.route('/wordlist', methods=['GET', 'POST'])
+def get_wordlist():
+    wordlist = users[username].wordlist
+    res = jsonify(wordlist=wordlist)
+    return res
+
