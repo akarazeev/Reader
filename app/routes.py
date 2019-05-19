@@ -1,7 +1,11 @@
-from flask import render_template, flash, redirect, jsonify, url_for
-from app import app
-from app.forms import LoginForm
+from flask import render_template, flash, redirect, jsonify, url_for, request
+from werkzeug.urls import url_parse
+from app import app, db
+from app.forms import LoginForm, RegistrationForm
 from googletrans import Translator
+from flask_login import current_user, login_user
+from app.models import User
+from flask_login import logout_user, login_required
 
 
 class UserData:
@@ -38,6 +42,7 @@ users[username].add_word("superfluidity")
 
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
     text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau. Superfluidity was originally discovered in liquid helium, by Pyotr Kapitsa and John F. Allen. It has since been described through phenomenology and microscopic theories. In liquid helium-4, the superfluidity occurs at far higher temperatures than it does in helium-3. Each atom of helium-4 is a boson particle, by virtue of its integer spin. A helium-3 atom is a fermion particle; it can form bosons only by pairing with itself at much lower temperatures. The discovery of superfluidity in helium-3 was the basis for the award of the 1996 Nobel Prize in Physics.[1] This process is similar to the electron pairing in superconductivity."
 
@@ -66,14 +71,43 @@ def index():
     return render_template('index.html', title='Home', res=res, vocab=vocab)
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        flash('Login requested for user {}, remember_me={}'.format(
-            form.username.data, form.remember_me.data))
-        return redirect('/index')
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 
 # API Section.

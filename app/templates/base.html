@@ -29,7 +29,13 @@
     </head>
     <body>
         <div>
-            N&A: <a href="/index">Home</a>, <a href="/wordlist">List of Words</a>, <a href="/login">Login (TODO)</a>
+            N&A: <a href="/index">Home</a>, <a href="/wordlist">List of Words</a>,
+            {% if current_user.is_anonymous %}
+            <a href="{{ url_for('login') }}">Login</a>
+            {% else %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
+            </div>
         </div>
 
         <hr>

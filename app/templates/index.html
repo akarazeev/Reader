@@ -2,6 +2,11 @@
 
 {% block content %}
 
+    <h1>Hi, {{ current_user.username }}!</h1>
+    {% for post in posts %}
+        <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+    {% endfor %}
+
     {% if res %}
         <h3>Sample Text</h3>
         {% for sentence in res %}
