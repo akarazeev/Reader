@@ -93,8 +93,14 @@ def api_remove(word):
 @app.route('/api/wordlist', methods=['GET', 'POST'])
 def api_wordlist():
     wordlist = users[username].wordlist
-    translations = [users[username].translations[x].capitalize for x in wordlist]
-    res = jsonify(dict(zip(wordlist, translations)))
+    wordlist = sorted(wordlist)
+
+    if len(wordlist) == 0:
+        res = dict()
+    else:
+        translations = [users[username].translations[x] for x in wordlist]
+        res = dict(zip(wordlist, translations))
+    res = jsonify(res)
     return res
 
 
