@@ -39,13 +39,12 @@ users[username].add_word("superfluidity")
 @app.route('/')
 @app.route('/index')
 def index():
-    text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau."
-    translated = users[username].translate(text)
-
-    text_sentences = text.split('.')
-    translated_sentences = translated.split('.')
+    text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau. Superfluidity was originally discovered in liquid helium, by Pyotr Kapitsa and John F. Allen. It has since been described through phenomenology and microscopic theories. In liquid helium-4, the superfluidity occurs at far higher temperatures than it does in helium-3. Each atom of helium-4 is a boson particle, by virtue of its integer spin. A helium-3 atom is a fermion particle; it can form bosons only by pairing with itself at much lower temperatures. The discovery of superfluidity in helium-3 was the basis for the award of the 1996 Nobel Prize in Physics.[1] This process is similar to the electron pairing in superconductivity."
 
     # Sentence translation.
+    translated = users[username].translate(text)
+    text_sentences = text.split('.')
+    translated_sentences = translated.split('.')
     res = [{"text_sentence": x + '.'} for x in text_sentences]
     for i in range(len(res)):
         res[i]['translated_sentence'] = translated_sentences[i]
@@ -62,10 +61,9 @@ def index():
                     highlights[j] = 1
         res[i]['sentence_words'] = list(zip(sentence_words, highlights))
 
-    wordlist = prepare_wordlist()
-    translations = [users[username].translations[x] for x in wordlist]
+    vocab = prepare_vocab()
 
-    return render_template('index.html', title='Home', res=res, wordlist_translations=zip(wordlist, translations))
+    return render_template('index.html', title='Home', res=res, vocab=vocab)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -118,9 +116,8 @@ def reading_remove(word):
 
 @app.route('/wordlist', methods=['GET', 'POST'])
 def web_wordlist():
-    wordlist = prepare_wordlist()
-    translations = [users[username].translations[x.lower()] for x in wordlist]
-    return render_template('wordlist_page.html', title='List of Words', wordlist_translations=zip(wordlist, translations))
+    vocab = prepare_vocab()
+    return render_template('wordlist_page.html', title='List of Words', vocab=vocab)
 
 
 @app.route('/remove/<word>', methods=['GET', 'POST'])
@@ -132,11 +129,14 @@ def web_remove(word):
 
 # Utils.
 
-def prepare_wordlist():
+def prepare_vocab():
     wordlist = users[username].wordlist
     wordlist = sorted(wordlist)
 
     if len(wordlist) == 0:
-        wordlist = None
+        res = None
+    else:
+        translations = [users[username].translations[x] for x in wordlist]
+        res = list(zip(wordlist, translations))
 
-    return wordlist
+    return res

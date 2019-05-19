@@ -1,5 +1,5 @@
-{% if wordlist_translations %}
-    {% for word, translation in wordlist_translations %}
+{% if vocab %}
+    {% for word, translation in vocab %}
         <div>
             <p>
                 <b>{{ word }}</b> &mdash; {{ translation }} [<a href="/remove/{{ word }}">remove</a>]

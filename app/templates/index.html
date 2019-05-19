@@ -3,12 +3,12 @@
 {% block content %}
 
     {% if res %}
-        <h3>Sample Text:</h3>
+        <h3>Sample Text</h3>
         {% for sentence in res %}
             <sentence title="{{ sentence.translated_sentence }}">
                 {% for word, highlight in sentence.sentence_words %}
                     {% if highlight == 1 %}
-                        <a class="text" href="/reading/remove/{{ word }}" style="background-color: yellow">{{ word }}</a>
+                        <a class="text_highlighted" href="/reading/remove/{{ word }}">{{ word }}</a>
                     {% else %}
                         <a class="text" href="/reading/add/{{ word }}">{{ word }}</a>
                     {% endif %}
