@@ -11,15 +11,23 @@ class UserData:
         self.translator = Translator()
 
     def add_word(self, word):
-        word = word.lower()
+        if word[0].isupper() == False:
+            word = word.capitalize()
+
         if word not in self.wordlist:
             self.wordlist.append(word)
-            self.translations[word] = self.translator.translate(word, dest='ru').text
+            self.translations[word] = self.translate(word)
 
     def remove_word(self, word):
-        word = word.lower()
+        if word[0].isupper() == False:
+            word = word.capitalize()
+
         if word in self.wordlist:
             self.wordlist.remove(word)
+
+    def translate(self, text):
+        res = self.translator.translate(text, dest='ru').text
+        return res
 
 
 users = dict(test=UserData())
@@ -31,22 +39,33 @@ users[username].add_word("superfluidity")
 @app.route('/')
 @app.route('/index')
 def index():
-    test_text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau."
-    splitted_test_text = test_text.split()
+    text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau."
+    translated = users[username].translate(text)
 
-    highlights = [0] * len(splitted_test_text)
+    text_sentences = text.split('.')
+    translated_sentences = translated.split('.')
+
+    # Sentence translation.
+    res = [{"text_sentence": x + '.'} for x in text_sentences]
+    for i in range(len(res)):
+        res[i]['translated_sentence'] = translated_sentences[i]
+
+    # Words highlightning.
     words_to_highlight = users[username].wordlist
     words_to_highlight = [x.lower() for x in words_to_highlight]
-
-    for w in words_to_highlight:
-        for i in range(len(splitted_test_text)):
-            if w == splitted_test_text[i].lower():
-                highlights[i] = 1
+    for i in range(len(res)):
+        sentence_words = res[i]['text_sentence'].split()
+        highlights = [0] * len(sentence_words)
+        for j in range(len(sentence_words)):
+            for w in words_to_highlight:
+                if w == sentence_words[j].lower():
+                    highlights[j] = 1
+        res[i]['sentence_words'] = list(zip(sentence_words, highlights))
 
     wordlist = prepare_wordlist()
-    translations = [users[username].translations[x.lower()] for x in wordlist]
+    translations = [users[username].translations[x] for x in wordlist]
 
-    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights), wordlist_translations=zip(wordlist, translations))
+    return render_template('index.html', title='Home', res=res, wordlist_translations=zip(wordlist, translations))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,7 +95,7 @@ def api_remove(word):
 @app.route('/api/wordlist', methods=['GET', 'POST'])
 def api_wordlist():
     wordlist = users[username].wordlist
-    translations = [users[username].translations[x] for x in wordlist]
+    translations = [users[username].translations[x].capitalize for x in wordlist]
     res = jsonify(dict(zip(wordlist, translations)))
     return res
 
@@ -115,7 +134,6 @@ def web_remove(word):
 
 def prepare_wordlist():
     wordlist = users[username].wordlist
-    wordlist = [x.capitalize() for x in wordlist]
     wordlist = sorted(wordlist)
 
     if len(wordlist) == 0:
