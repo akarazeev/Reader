@@ -11,13 +11,17 @@
                 text-decoration:none;
             }
             a.text:hover {
-              background-color: yellowgreen !important;
+                background-color: yellowgreen !important;
             }
             a.text_highlighted:hover {
-              background-color: palevioletred !important;
+                background-color: palevioletred !important;
             }
             sentence:hover {
                 text-decoration: underline;
+            }
+            user {
+                color: blue;
+                font-weight: bold;
             }
         </style>
 
@@ -28,21 +32,23 @@
         {% endif %}
     </head>
     <body>
+        {% if current_user.username %}
+            <div>Пользователь: <user>{{ current_user.username }}</user></div>
+        {% endif %}
         <div>
-            N&A: <a href="/index">Home</a>, <a href="/wordlist">List of Words</a>,
+            <a href="/index">Главная</a> - <a href="/wordlist">Список слов</a> -
             {% if current_user.is_anonymous %}
-            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('login') }}"> Залогиниться</a>
             {% else %}
-            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('logout') }}"> Выйти</a>
             {% endif %}
-            </div>
         </div>
 
         <hr>
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <ul>
+            <ul style="color: red">
                 {% for message in messages %}
                 <li>{{ message }}</li>
                 {% endfor %}

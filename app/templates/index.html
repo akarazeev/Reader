@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-    <h1>Hi, {{ current_user.username }}!</h1>
     {% for post in posts %}
         <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
     {% endfor %}
 
     {% if res %}
-        <h3>Sample Text</h3>
+        <h3>Пример текста</h3>
         {% for sentence in res %}
             <sentence title="{{ sentence.translated_sentence }}">
                 {% for word, highlight in sentence.sentence_words %}
@@ -24,7 +22,7 @@
 
     <hr>
 
-    <h3>List of Words</h3>
+    <h3>Список слов</h3>
 
     {% include "wordlist.html" %}
 {% endblock %}
