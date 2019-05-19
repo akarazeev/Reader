@@ -113,18 +113,21 @@ def logout():
 # API Section.
 
 @app.route('/api/add/<word>', methods=['GET', 'POST'])
+@login_required
 def api_add(word):
     users[username].add_word(word)
     return word
 
 
 @app.route('/api/remove/<word>', methods=['GET', 'POST'])
+@login_required
 def api_remove(word):
     users[username].remove_word(word)
     return word
 
 
 @app.route('/api/wordlist', methods=['GET', 'POST'])
+@login_required
 def api_wordlist():
     wordlist = users[username].wordlist
     wordlist = sorted(wordlist)
@@ -141,12 +144,14 @@ def api_wordlist():
 # Reading Section.
 
 @app.route('/reading/add/<word>', methods=['GET', 'POST'])
+@login_required
 def reading_add(word):
     users[username].add_word(word)
     return redirect(url_for("index"))
 
 
 @app.route('/reading/remove/<word>', methods=['GET', 'POST'])
+@login_required
 def reading_remove(word):
     users[username].remove_word(word)
     return redirect(url_for("index"))
@@ -155,12 +160,14 @@ def reading_remove(word):
 # Web Section.
 
 @app.route('/wordlist', methods=['GET', 'POST'])
+@login_required
 def web_wordlist():
     vocab = prepare_vocab()
     return render_template('wordlist_page.html', title='List of Words', vocab=vocab)
 
 
 @app.route('/remove/<word>', methods=['GET', 'POST'])
+@login_required
 def web_remove(word):
     api_remove(word)
     web_wordlist()
