@@ -1,10 +1,10 @@
 <p>Sorted by: First letter</p>
 
-{% if wordlist %}
-    {% for word in wordlist %}
+{% if wordlist_translations %}
+    {% for word, translation in wordlist_translations %}
         <div>
             <p>
-                <b>{{ word }}</b> &mdash; [translation (TODO)] [<a href="/remove/{{ word }}">remove</a>]
+                <b>{{ word }}</b> &mdash; {{ translation }} [<a href="/remove/{{ word }}">remove</a>]
             </p>
         </div>
     {% endfor %}

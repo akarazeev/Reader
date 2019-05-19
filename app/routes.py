@@ -1,16 +1,20 @@
 from flask import render_template, flash, redirect, jsonify, url_for
 from app import app
 from app.forms import LoginForm
+from googletrans import Translator
 
 
 class UserData:
     def __init__(self):
         self.wordlist = list()
+        self.translations = dict()
+        self.translator = Translator()
 
     def add_word(self, word):
         word = word.lower()
         if word not in self.wordlist:
             self.wordlist.append(word)
+            self.translations[word] = self.translator.translate(word, dest='ru').text
 
     def remove_word(self, word):
         word = word.lower()
@@ -20,7 +24,8 @@ class UserData:
 
 users = dict(test=UserData())
 username = 'test'
-users[username].wordlist = ["one", "two", "superfluidity", "41"]
+users[username].add_word("one")
+users[username].add_word("superfluidity")
 
 
 @app.route('/')
@@ -39,8 +44,9 @@ def index():
                 highlights[i] = 1
 
     wordlist = prepare_wordlist()
+    translations = [users[username].translations[x.lower()] for x in wordlist]
 
-    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights), wordlist=wordlist)
+    return render_template('index.html', title='Home', splitted_text=zip(splitted_test_text, highlights), wordlist_translations=zip(wordlist, translations))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -70,7 +76,8 @@ def api_remove(word):
 @app.route('/api/wordlist', methods=['GET', 'POST'])
 def api_wordlist():
     wordlist = users[username].wordlist
-    res = jsonify(wordlist=wordlist)
+    translations = [users[username].translations[x] for x in wordlist]
+    res = jsonify(dict(zip(wordlist, translations)))
     return res
 
 
@@ -93,8 +100,8 @@ def reading_remove(word):
 @app.route('/wordlist', methods=['GET', 'POST'])
 def web_wordlist():
     wordlist = prepare_wordlist()
-
-    return render_template('wordlist_page.html', title='List of Words', wordlist=wordlist)
+    translations = [users[username].translations[x.lower()] for x in wordlist]
+    return render_template('wordlist_page.html', title='List of Words', wordlist_translations=zip(wordlist, translations))
 
 
 @app.route('/remove/<word>', methods=['GET', 'POST'])
