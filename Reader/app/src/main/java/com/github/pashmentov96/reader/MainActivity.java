@@ -1,12 +1,14 @@
 package com.github.pashmentov96.reader;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -17,6 +19,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,17 +27,39 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import cz.msebera.android.httpclient.HttpEntity;
+import cz.msebera.android.httpclient.HttpHeaders;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
+import cz.msebera.android.httpclient.util.EntityUtils;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
 import nl.siegmann.epublib.epub.Main;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
+    String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,9 +87,22 @@ public class MainActivity extends AppCompatActivity {
         buttonOpen = findViewById(R.id.button_open);
         textView = findViewById(R.id.textView);
 
+        @SuppressLint("StaticFieldLeak")
         View.OnClickListener onClickButtonHistory = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new AsyncTask<Void, Void, String>() {
+                    @Override
+                    protected String doInBackground(Void... voids) {
+                        return loadWordlist();
+                    }
+
+                    @Override
+                    protected void onPostExecute(String s) {
+                        Log.d("MyLogs", "Wordlist + " + s);
+                    }
+                }.execute();
+
                 Toast.makeText(v.getContext(), "Click on history_button", Toast.LENGTH_LONG).show();
             }
         };
@@ -90,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(@NonNull View widget) {
                 Toast.makeText(MainActivity.this, "Later", Toast.LENGTH_LONG).show();
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        return addWord("Super");
+                    }
+                }.execute();
             }
         };
 
@@ -101,6 +146,121 @@ public class MainActivity extends AppCompatActivity {
 
         textView.setText(ssBuilder);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                return loadToken();
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                Log.d("MyLogs", "token + " + s);
+                token = s;
+            }
+        }.execute();
+    }
+
+    private String parseTokenFromJson(String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            return jsonObject.getString("token");
+        } catch (JSONException e) {
+            return "Error";
+        }
+    }
+
+    private String loadToken() {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL("http://d6719ff8.ngrok.io/api/tokens");
+            String encoding = new String(Base64.encode(("nikita"+":"+"nikita").getBytes("UTF-8"), Base64.DEFAULT));
+
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty  ("Authorization", "Basic " + encoding);
+
+            Log.d("MyLogs", "Code " + connection.getResponseCode() + "; " + "Message " + connection.getResponseMessage());
+
+            InputStream content = connection.getInputStream();
+            BufferedReader in =
+                    new BufferedReader (new InputStreamReader (content));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                stringBuilder.append(line + "\n");
+            }
+            return parseTokenFromJson(stringBuilder.toString());
+        } catch(Exception e) {
+            e.printStackTrace();
+            return "Error";
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private Map<String, String> parseWordlistFromJson(String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            Iterator<String> keys = jsonObject.keys();
+            HashMap<String, String> wordlist = new HashMap<>();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                String value = jsonObject.getString(key);
+                Log.d("Wordlist", key + ": " + value);
+                wordlist.put(key, value);
+            }
+            return wordlist;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    private String loadWordlist() {
+        try {
+
+            HttpClient httpclient = HttpClientBuilder.create().build();
+            HttpGet httpGet = new HttpGet("http://d6719ff8.ngrok.io/api/wordlist");
+            httpGet.addHeader("Authorization", "Bearer " + token);
+            HttpResponse response = httpclient.execute(httpGet);
+            int responseCode = response.getStatusLine().getStatusCode();
+            Log.d("MyLogs", "Code " + responseCode);
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                return "Error";
+            } else {
+                String stringResponse = EntityUtils.toString(response.getEntity());
+                parseWordlistFromJson(stringResponse);
+                return stringResponse;
+            }
+        } catch (IOException ex) {
+            return "Error " + ex.getMessage();
+        }
+    }
+
+    private Void addWord(String word) {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL("http://d6719ff8.ngrok.io/api/add/" + word);
+
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            //connection.setDoOutput(true);
+            connection.setRequestProperty  ("Authorization", "Bearer " + token);
+
+            Log.d("MyLogs", "Code " + connection.getResponseCode() + "; " + "Message " + connection.getResponseMessage());
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+        return null;
     }
 
     @Override
