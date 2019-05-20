@@ -1,11 +1,11 @@
-from flask import render_template, flash, redirect, jsonify, url_for, request
+from flask import render_template, flash, redirect, jsonify, url_for, request, abort
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import LoginForm, RegistrationForm
-from googletrans import Translator
-from flask_login import current_user, login_user
 from app.models import User
-from flask_login import logout_user, login_required
+from googletrans import Translator
+from app.api.auth import token_auth
 
 
 class UserData:
@@ -113,21 +113,21 @@ def logout():
 # API Section.
 
 @app.route('/api/add/<word>', methods=['GET', 'POST'])
-@login_required
+@token_auth.login_required
 def api_add(word):
     users[username].add_word(word)
     return word
 
 
 @app.route('/api/remove/<word>', methods=['GET', 'POST'])
-@login_required
+@token_auth.login_required
 def api_remove(word):
     users[username].remove_word(word)
     return word
 
 
 @app.route('/api/wordlist', methods=['GET', 'POST'])
-@login_required
+@token_auth.login_required
 def api_wordlist():
     wordlist = users[username].wordlist
     wordlist = sorted(wordlist)
