@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     Button buttonHistory;
     Button buttonOpen;
 
-    TextView textView;
+    ClickableTextView textView;
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
@@ -116,30 +117,11 @@ public class MainActivity extends AppCompatActivity {
 
         buttonOpen.setOnClickListener(onClickButtonOpen);
 
-        String text = textView.getText().toString();
-        SpannableStringBuilder ssBuilder = new SpannableStringBuilder(text);
+        List<String> words = new ArrayList<>();
+        words.add("Nikita");
+        words.add("name");
 
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                Toast.makeText(MainActivity.this, "Later", Toast.LENGTH_LONG).show();
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... voids) {
-                        return addWord("Super");
-                    }
-                }.execute();
-            }
-        };
-
-        ssBuilder.setSpan(
-                clickableSpan,
-                text.indexOf("Nikita"),
-                text.indexOf("Nikita") + "Nikita".length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        textView.setText(ssBuilder);
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
+        textView.setTextWithWords(words);
 
         new AsyncTask<Void, Void, String>() {
             @Override

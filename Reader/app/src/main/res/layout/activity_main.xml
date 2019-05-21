@@ -40,7 +40,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5" />
 
-    <TextView
+    <com.github.pashmentov96.reader.ClickableTextView
         android:id="@+id/textView"
         android:layout_width="273dp"
         android:layout_height="154dp"

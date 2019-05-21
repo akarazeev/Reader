@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClickableTextView extends android.support.v7.widget.AppCompatTextView {
@@ -26,7 +27,16 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
         super(context, attrs, defStyle);
     }
 
-    public void setTextWithClickableWords(String text, List<ClickableWord> clickableWords) {
+    public void setTextWithWords(List<String> words) {
+        String text = getText().toString();
+        List<ClickableWord> clickableWords = new ArrayList<>();
+        for (String word: words) {
+            clickableWords.add(new ClickableWord(word));
+        }
+        setTextWithClickableWords(text, clickableWords);
+    }
+
+    private void setTextWithClickableWords(String text, List<ClickableWord> clickableWords) {
         setMovementMethod(LinkMovementMethod.getInstance());
         setText(addClickablePart(text, clickableWords), BufferType.SPANNABLE);
     }
@@ -51,7 +61,7 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
         private String word;
         private ClickableSpan clickableSpan;
 
-        public ClickableWord(final String word, ClickableSpan clickableSpan) {
+        public ClickableWord(final String word) {
             this.word = word;
             this.clickableSpan = new ClickableSpan() {
                 @Override
