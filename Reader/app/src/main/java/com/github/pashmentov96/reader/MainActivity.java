@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
     String token;
+    String textOfBook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +113,14 @@ public class MainActivity extends AppCompatActivity {
                 intent.setType("*/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
+
+                //textView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                //Log.d("MyLogs", "Count of lines = " + textView.getLineCount());
+                //Log.d("MyLogs", "Height = " + textView.getMeasuredHeight());
+                //Log.d("MyLogs", "Height of line = " + textView.getLineHeight());
+
+                //Intent intent = new Intent(v.getContext(), ScreenSlidePagerActivity.class);
+                //startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
             }
         };
 
@@ -121,7 +130,9 @@ public class MainActivity extends AppCompatActivity {
         words.add("Nikita");
         words.add("name");
 
-        textView.setTextWithWords(words);
+        //textView.setTextWithWords(words);
+
+        textView.setTextWithAllWords();
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -272,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("MyLogs", String.valueOf(book.getContents().size()));
 
                     logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
+                    startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
                 }
             }
         }
@@ -290,10 +302,13 @@ public class MainActivity extends AppCompatActivity {
                 InputStream is = tocReference.getResource().getInputStream();
                 BufferedReader r = new BufferedReader(new InputStreamReader(is));
                 String line;
+                StringBuilder stringBuilder = new StringBuilder();
                 while ((line = r.readLine()) != null) {
                     line = Html.fromHtml(line).toString();
+                    stringBuilder.append(line + " ");
                     Log.d("Book", line);
                 }
+                textOfBook = stringBuilder.toString();
             }
             catch(IOException e){
 
