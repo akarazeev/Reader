@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
         buttonHistory = findViewById(R.id.button_history);
         buttonOpen = findViewById(R.id.button_open);
-        textView = findViewById(R.id.textView);
 
         @SuppressLint("StaticFieldLeak")
         View.OnClickListener onClickButtonHistory = new View.OnClickListener() {
@@ -125,14 +124,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         buttonOpen.setOnClickListener(onClickButtonOpen);
-
-        List<String> words = new ArrayList<>();
-        words.add("Nikita");
-        words.add("name");
-
-        //textView.setTextWithWords(words);
-
-        textView.setTextWithAllWords();
 
         new AsyncTask<Void, Void, String>() {
             @Override
