@@ -108,18 +108,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(v.getContext(), "Click on open_button", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent();
-                intent.setType("*/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
-
-                //textView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                //Log.d("MyLogs", "Count of lines = " + textView.getLineCount());
-                //Log.d("MyLogs", "Height = " + textView.getMeasuredHeight());
-                //Log.d("MyLogs", "Height of line = " + textView.getLineHeight());
-
-                //Intent intent = new Intent(v.getContext(), ScreenSlidePagerActivity.class);
-                //startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
+                clickOnOpenButton();
             }
         };
 
@@ -137,6 +126,13 @@ public class MainActivity extends AppCompatActivity {
                 token = s;
             }
         }.execute();
+    }
+
+    private void clickOnOpenButton() {
+        Intent intent = new Intent();
+        intent.setType("*/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
     }
 
     private String parseTokenFromJson(String json) {
