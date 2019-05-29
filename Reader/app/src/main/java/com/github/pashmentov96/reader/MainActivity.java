@@ -5,8 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -14,17 +12,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -37,24 +33,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpHeaders;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
 import cz.msebera.android.httpclient.util.EntityUtils;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
-import nl.siegmann.epublib.epub.Main;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,13 +56,71 @@ public class MainActivity extends AppCompatActivity {
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
+    final int OPEN_LOGIN_ACTIVITY = 20;
+
     String token;
     String textOfBook;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        SomePreferences somePreferences = new SomePreferences(this);
+        MenuInflater inflater = getMenuInflater();
+        if (somePreferences.getVariableIsLogged() == 0) {
+            inflater.inflate(R.menu.menu_notlogged, menu);
+        } else {
+            inflater.inflate(R.menu.menu_logged, menu);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Toast.makeText(this, "settings", Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.action_login:
+                Toast.makeText(this, "login", Toast.LENGTH_LONG).show();
+                clickOnLoginButton();
+                return true;
+            case R.id.action_logout:
+                Toast.makeText(this, "logout", Toast.LENGTH_LONG).show();
+                clickOnLogoutButton();
+                return true;
+            case R.id.action_open:
+                Toast.makeText(this, "open", Toast.LENGTH_LONG).show();
+                clickOnOpenButton();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void clickOnLoginButton() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, OPEN_LOGIN_ACTIVITY);
+        SomePreferences somePreferences = new SomePreferences(this);
+        somePreferences.setVariableIsLogged(1);
+        recreate();
+    }
+
+    private void clickOnLogoutButton() {
+        SomePreferences somePreferences = new SomePreferences(this);
+        somePreferences.setVariableIsLogged(0);
+        recreate();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SomePreferences somePreferences = new SomePreferences(this);
+
+        Log.d("MyLogs", "IsLogged = " + somePreferences.getVariableIsLogged());
+
+        Toolbar myToolBar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolBar);
 
         int permissionCheck = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         Log.d("MyLogs", "Check for READ_EXTERNAL_STORAGE permission: " + (permissionCheck == PackageManager.PERMISSION_GRANTED));
@@ -239,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        //super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == PICK_FILE_REQUEST) {
                 if (data == null) {
@@ -272,6 +321,15 @@ public class MainActivity extends AppCompatActivity {
                     logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
                     startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
                 }
+            }
+            if (requestCode == OPEN_LOGIN_ACTIVITY) {
+                if (data == null) {
+                    return ;
+                }
+                String login = data.getStringExtra("login");
+                String password = data.getStringExtra("password");
+                Log.d("Login", login);
+                Log.d("Password", password);
             }
         }
     }
