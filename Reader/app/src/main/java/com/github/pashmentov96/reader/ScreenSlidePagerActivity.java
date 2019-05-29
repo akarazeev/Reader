@@ -69,6 +69,12 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
         public int getCount() {
             return numPages;
         }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "Page " + position;
+        }
     }
 
 }
