@@ -10,6 +10,7 @@ import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,42 +31,12 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
 
     final int color = getResources().getColor(R.color.black);
 
-    public void setTextWithWords(List<String> words) {
-        String text = getText().toString();
-        List<ClickableWord> clickableWords = new ArrayList<>();
-        for (String word: words) {
-            clickableWords.add(new ClickableWord(word, color));
-        }
-        setTextWithClickableWords(text, clickableWords);
-    }
-
-    private void setTextWithClickableWords(String text, List<ClickableWord> clickableWords) {
+    public void setTextWithAllWords(TextView textOfTranslation) {
         setMovementMethod(LinkMovementMethod.getInstance());
-        setText(addClickablePart(text, clickableWords), BufferType.SPANNABLE);
+        setText(addClickablePart(getText().toString(), textOfTranslation), BufferType.SPANNABLE);
     }
 
-    private SpannableStringBuilder addClickablePart(String str, List<ClickableWord> clickableWords) {
-        SpannableStringBuilder ssb = new SpannableStringBuilder(str);
-
-        for (ClickableWord clickableWord : clickableWords) {
-            int idx1 = str.indexOf(clickableWord.getWord());
-            int idx2 = 0;
-            while (idx1 != -1) {
-                idx2 = idx1 + clickableWord.getWord().length();
-                ssb.setSpan(clickableWord.getClickableSpan(), idx1, idx2, 0);
-                idx1 = str.indexOf(clickableWord.getWord(), idx2);
-            }
-        }
-
-        return ssb;
-    }
-
-    public void setTextWithAllWords() {
-        setMovementMethod(LinkMovementMethod.getInstance());
-        setText(addClickablePart(getText().toString()), BufferType.SPANNABLE);
-    }
-
-    private SpannableStringBuilder addClickablePart(String str) {
+    private SpannableStringBuilder addClickablePart(String str, TextView textOfTranslation) {
         SpannableStringBuilder ssb = new SpannableStringBuilder(str);
 
         int idx1 = -1;
@@ -74,7 +45,7 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
             if (str.charAt(i) == '\n' || str.charAt(i) == ' ') {
                 int idx2 = i;
                 if (idx1 != -1) {
-                    ClickableWord clickableWord = new ClickableWord(str.substring(idx1, idx2), color);
+                    ClickableWord clickableWord = new ClickableWord(str.substring(idx1, idx2), color, textOfTranslation);
                     ssb.setSpan(clickableWord.getClickableSpan(), idx1, idx2, 0);
                 }
                 idx1 = -1;
@@ -87,7 +58,7 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
 
         if (idx1 != -1) {
             int idx2 = str.length();
-            ClickableWord clickableWord = new ClickableWord(str.substring(idx1, idx2), color);
+            ClickableWord clickableWord = new ClickableWord(str.substring(idx1, idx2), color, textOfTranslation);
             ssb.setSpan(clickableWord.getClickableSpan(), idx1, idx2, 0);
         }
 
@@ -102,11 +73,12 @@ public class ClickableTextView extends android.support.v7.widget.AppCompatTextVi
     public static class ClickableWord {
         private String word;
         private ClickableSpan clickableSpan;
-        public ClickableWord(final String word, final int color) {
+        public ClickableWord(final String word, final int color, final TextView textOfTranslation) {
             this.word = word;
             this.clickableSpan = new ClickableSpan() {
                 @Override
                 public void onClick(@NonNull View widget) {
+                    textOfTranslation.setText(word);
                     Log.d("MyLogs", "Click on " + word);
                 }
 

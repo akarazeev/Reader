@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 public class ScreenSlidePageFragment extends Fragment {
     static final String ARGUMENT_PAGE_NUMBER = "arg_page_number";
     static final String ARGUMENT_PAGE_TEXT = "arg_page_text";
@@ -38,11 +40,13 @@ public class ScreenSlidePageFragment extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_screen_slide_page, container, false);
 
         ClickableTextView page = rootView.findViewById(R.id.textOfPage);
-        page.setText("Page " + pageNumber + "\n" + text);
+        page.setText(text);
 
         Log.d("Pages", text);
 
-        page.setTextWithAllWords();
+        TextView textOfTranslation = rootView.findViewById(R.id.textOfTranslation);
+
+        page.setTextWithAllWords(textOfTranslation);
 
         return rootView;
     }
