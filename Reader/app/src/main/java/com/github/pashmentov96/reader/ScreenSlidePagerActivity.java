@@ -10,8 +10,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
-public class ScreenSlidePagerActivity extends FragmentActivity {
+public class ScreenSlidePagerActivity extends AppCompatActivity {
     private ViewPager viewPager;
 
     private PagerAdapter pagerAdapter;
@@ -31,6 +35,12 @@ public class ScreenSlidePagerActivity extends FragmentActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_screen_slide);
+
+        Toolbar myToolBar = findViewById(R.id.my_toolbar_2);
+        setSupportActionBar(myToolBar);
+
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
 
         textOfBook = getIntent().getStringExtra(ARGUMENT_TEXT);
         numPages = (textOfBook.length() + 199) / 200;

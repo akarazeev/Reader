@@ -42,7 +42,7 @@ public class ScreenSlidePageFragment extends Fragment {
         ClickableTextView page = rootView.findViewById(R.id.textOfPage);
         page.setText(text);
 
-        Log.d("Pages", text);
+        Log.d("Pages", pageNumber + ": " + text);
 
         TextView textOfTranslation = rootView.findViewById(R.id.textOfTranslation);
 
