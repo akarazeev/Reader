@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,16 +48,13 @@ import nl.siegmann.epublib.epub.EpubReader;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button buttonHistory;
+    Button buttonWordlist;
     Button buttonOpen;
-
-    ClickableTextView textView;
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
     final int OPEN_LOGIN_ACTIVITY = 20;
 
-    String token;
     String textOfBook;
 
     @Override
@@ -99,15 +95,44 @@ public class MainActivity extends AppCompatActivity {
     private void clickOnLoginButton() {
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, OPEN_LOGIN_ACTIVITY);
-        SomePreferences somePreferences = new SomePreferences(this);
-        somePreferences.setVariableIsLogged(1);
-        recreate();
     }
 
     private void clickOnLogoutButton() {
         SomePreferences somePreferences = new SomePreferences(this);
         somePreferences.setVariableIsLogged(0);
         recreate();
+    }
+
+    private void clickOnOpenButton() {
+        SomePreferences somePreferences = new SomePreferences(this);
+        if (somePreferences.getVariableIsLogged() == 0) {
+            Toast.makeText(this, "You should be logged to open book", Toast.LENGTH_LONG).show();
+        } else {
+            Intent intent = new Intent();
+            intent.setType("*/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void clickOnWordlistButton(View view) {
+        SomePreferences somePreferences = new SomePreferences(this);
+        if (somePreferences.getVariableIsLogged() == 0) {
+            Toast.makeText(this, "You should be logged to open your wordlist", Toast.LENGTH_LONG).show();
+        } else {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... voids) {
+                    return loadWordlist();
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    Log.d("MyLogs", "Wordlist + " + s);
+                }
+            }.execute();
+        }
     }
 
     @Override
@@ -128,30 +153,18 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
         }
 
-        buttonHistory = findViewById(R.id.button_history);
+        buttonWordlist = findViewById(R.id.button_wordlist);
         buttonOpen = findViewById(R.id.button_open);
 
         @SuppressLint("StaticFieldLeak")
-        View.OnClickListener onClickButtonHistory = new View.OnClickListener() {
+        View.OnClickListener onClickButtonWordlist = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AsyncTask<Void, Void, String>() {
-                    @Override
-                    protected String doInBackground(Void... voids) {
-                        return loadWordlist();
-                    }
-
-                    @Override
-                    protected void onPostExecute(String s) {
-                        Log.d("MyLogs", "Wordlist + " + s);
-                    }
-                }.execute();
-
-                Toast.makeText(v.getContext(), "Click on history_button", Toast.LENGTH_LONG).show();
+                clickOnWordlistButton(v);
             }
         };
 
-        buttonHistory.setOnClickListener(onClickButtonHistory);
+        buttonWordlist.setOnClickListener(onClickButtonWordlist);
 
         View.OnClickListener onClickButtonOpen = new View.OnClickListener() {
             @Override
@@ -162,68 +175,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         buttonOpen.setOnClickListener(onClickButtonOpen);
-
-        new AsyncTask<Void, Void, String>() {
-            @Override
-            protected String doInBackground(Void... voids) {
-                return loadToken();
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                Log.d("MyLogs", "token + " + s);
-                token = s;
-            }
-        }.execute();
-    }
-
-    private void clickOnOpenButton() {
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
-    }
-
-    private String parseTokenFromJson(String json) {
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            return jsonObject.getString("token");
-        } catch (JSONException e) {
-            return "Error";
-        }
-    }
-
-    private String loadToken() {
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL("http://d6719ff8.ngrok.io/api/tokens");
-            String encoding = new String(Base64.encode(("nikita"+":"+"nikita").getBytes("UTF-8"), Base64.DEFAULT));
-
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-            connection.setRequestProperty  ("Authorization", "Basic " + encoding);
-
-            Log.d("MyLogs", "Code " + connection.getResponseCode() + "; " + "Message " + connection.getResponseMessage());
-
-            InputStream content = connection.getInputStream();
-            BufferedReader in =
-                    new BufferedReader (new InputStreamReader (content));
-
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                stringBuilder.append(line + "\n");
-            }
-            return parseTokenFromJson(stringBuilder.toString());
-        } catch(Exception e) {
-            e.printStackTrace();
-            return "Error";
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
     }
 
     private Map<String, String> parseWordlistFromJson(String json) {
@@ -244,6 +195,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String loadWordlist() {
+        SomePreferences somePreferences = new SomePreferences(this);
+        String token = somePreferences.getToken();
         try {
 
             HttpClient httpclient = HttpClientBuilder.create().build();
@@ -266,6 +219,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Void addWord(String word) {
+        SomePreferences somePreferences = new SomePreferences(this);
+        String token = somePreferences.getToken();
         HttpURLConnection connection = null;
         try {
             URL url = new URL("http://d6719ff8.ngrok.io/api/add/" + word);
@@ -326,10 +281,10 @@ public class MainActivity extends AppCompatActivity {
                 if (data == null) {
                     return ;
                 }
-                String login = data.getStringExtra("login");
-                String password = data.getStringExtra("password");
-                Log.d("Login", login);
-                Log.d("Password", password);
+                SomePreferences somePreferences = new SomePreferences(this);
+                somePreferences.setVariableIsLogged(1);
+                somePreferences.setToken(data.getStringExtra("token"));
+                recreate();
             }
         }
     }
