@@ -21,7 +21,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".ScreenSlidePagerActivity"/>
-        <activity android:name=".LoginActivity"/>
+        <activity android:name=".LoginActivity"
+            android:label="Login"/>
+        <activity android:name=".WordlistActivity"
+            android:label="Wordlist"
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>
