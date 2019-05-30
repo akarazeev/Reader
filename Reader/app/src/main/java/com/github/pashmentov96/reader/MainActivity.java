@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -22,9 +21,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,16 +28,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
-import cz.msebera.android.httpclient.util.EntityUtils;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
@@ -100,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private void clickOnLogoutButton() {
         SomePreferences somePreferences = new SomePreferences(this);
         somePreferences.setVariableIsLogged(0);
+        somePreferences.setToken("Error");
         recreate();
     }
 
@@ -121,17 +110,7 @@ public class MainActivity extends AppCompatActivity {
         if (somePreferences.getVariableIsLogged() == 0) {
             Toast.makeText(this, "You should be logged to open your wordlist", Toast.LENGTH_LONG).show();
         } else {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                protected String doInBackground(Void... voids) {
-                    return loadWordlist();
-                }
-
-                @Override
-                protected void onPostExecute(String s) {
-                    Log.d("MyLogs", "Wordlist + " + s);
-                }
-            }.execute();
+            startActivity(new Intent(this, WordlistActivity.class));
         }
     }
 
@@ -144,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MyLogs", "IsLogged = " + somePreferences.getVariableIsLogged());
 
-        Toolbar myToolBar = findViewById(R.id.my_toolbar);
+        Toolbar myToolBar = findViewById(R.id.my_toolbar_2);
         setSupportActionBar(myToolBar);
 
         int permissionCheck = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -175,47 +154,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         buttonOpen.setOnClickListener(onClickButtonOpen);
-    }
-
-    private Map<String, String> parseWordlistFromJson(String json) {
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            Iterator<String> keys = jsonObject.keys();
-            HashMap<String, String> wordlist = new HashMap<>();
-            while (keys.hasNext()) {
-                String key = keys.next();
-                String value = jsonObject.getString(key);
-                Log.d("Wordlist", key + ": " + value);
-                wordlist.put(key, value);
-            }
-            return wordlist;
-        } catch (JSONException e) {
-            return null;
-        }
-    }
-
-    private String loadWordlist() {
-        SomePreferences somePreferences = new SomePreferences(this);
-        String token = somePreferences.getToken();
-        try {
-
-            HttpClient httpclient = HttpClientBuilder.create().build();
-            HttpGet httpGet = new HttpGet("http://d6719ff8.ngrok.io/api/wordlist");
-            httpGet.addHeader("Authorization", "Bearer " + token);
-            HttpResponse response = httpclient.execute(httpGet);
-            int responseCode = response.getStatusLine().getStatusCode();
-            Log.d("MyLogs", "Code " + responseCode);
-
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                return "Error";
-            } else {
-                String stringResponse = EntityUtils.toString(response.getEntity());
-                parseWordlistFromJson(stringResponse);
-                return stringResponse;
-            }
-        } catch (IOException ex) {
-            return "Error " + ex.getMessage();
-        }
     }
 
     private Void addWord(String word) {
