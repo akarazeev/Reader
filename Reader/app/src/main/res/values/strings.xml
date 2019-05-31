@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Reader</string>
+    <string name="no_registration">Don\'t have account? Register <a href = "http://d6719ff8.ngrok.io/register">here</a></string>
+    <string name="wrong_login">Wrong login or password. Please, try again. </string>
+    <string name="login">Login</string>
+    <string name="wordlist">My dictionary</string>
+    <string name="open">Open</string>
+    <string name="hint_add_word">To add word to your wordlist click on it on page and then click on it under page</string>
+    <string name="hint_enter_login">Enter login</string>
+    <string name="hint_enter_password">Enter password</string>
+    <string name="click_word">Click word to translate</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
 </resources>
