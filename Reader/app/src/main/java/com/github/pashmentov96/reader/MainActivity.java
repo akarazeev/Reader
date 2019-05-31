@@ -156,29 +156,6 @@ public class MainActivity extends AppCompatActivity {
         buttonOpen.setOnClickListener(onClickButtonOpen);
     }
 
-    private Void addWord(String word) {
-        SomePreferences somePreferences = new SomePreferences(this);
-        String token = somePreferences.getToken();
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL("http://d6719ff8.ngrok.io/api/add/" + word);
-
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            //connection.setDoOutput(true);
-            connection.setRequestProperty  ("Authorization", "Bearer " + token);
-
-            Log.d("MyLogs", "Code " + connection.getResponseCode() + "; " + "Message " + connection.getResponseMessage());
-        } catch(Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-        return null;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         //super.onActivityResult(requestCode, resultCode, data);

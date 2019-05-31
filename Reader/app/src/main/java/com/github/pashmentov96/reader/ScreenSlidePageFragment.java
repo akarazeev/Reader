@@ -46,9 +46,7 @@ public class ScreenSlidePageFragment extends Fragment {
 
         Log.d("Pages", pageNumber + ": " + text);
 
-        TextView clickedWord = rootView.findViewById(R.id.clickedWord);
-
-        page.setTextWithAllWords(clickedWord, translationOfWord);
+        page.setTextWithAllWords(translationOfWord);
 
         return rootView;
     }

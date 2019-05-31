@@ -19,6 +19,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class ScreenSlidePagerActivity extends AppCompatActivity implements View.OnClickListener {
     private ViewPager viewPager;
 
@@ -30,6 +33,8 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
 
     int numPages;
 
+    public static String clickedWord;
+
     public static Intent getIntent(Context context, String text) {
         Intent intent = new Intent(context, ScreenSlidePagerActivity.class);
         intent.putExtra(ARGUMENT_TEXT, text);
@@ -37,11 +42,47 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         if (v.getId() == R.id.traslationOfWord) {
-            Toast.makeText(v.getContext(), "Click on translationOfWord", Toast.LENGTH_LONG).show();
+            if (clickedWord.length() > 0) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        Toast.makeText(v.getContext(), clickedWord + " added to your wordlist", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        return addWord(clickedWord);
+                    }
+                }.execute();
+            }
         }
     }
+
+    private Void addWord(String word) {
+        SomePreferences somePreferences = new SomePreferences(this);
+        String token = somePreferences.getToken();
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL("http://d6719ff8.ngrok.io/api/add/" + word);
+
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            //connection.setDoOutput(true);
+            connection.setRequestProperty  ("Authorization", "Bearer " + token);
+
+            Log.d("MyLogs", "Code " + connection.getResponseCode() + "; " + "Message " + connection.getResponseMessage());
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+        return null;
+    }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
