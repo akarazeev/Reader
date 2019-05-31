@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "You should be logged to open book", Toast.LENGTH_LONG).show();
         } else {
             Intent intent = new Intent();
-            intent.setType("*/*");
+            intent.setType("application/epub+zip");
             intent.setAction(Intent.ACTION_GET_CONTENT);
             startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
         }
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Uri selectedFileUri = data.getData();
                 String path = selectedFileUri.getPath();
+                Log.d("MyLogs", "Type = " + data.getType());
 
                 String extension = path.substring(path.lastIndexOf('.'));
                 Log.d("MyLogs", "Path: " + path);
