@@ -6,4 +6,9 @@
     <string name="wordlist">My dictionary</string>
     <string name="open">Open</string>
     <string name="hint_add_word">To add word to your wordlist click on it on page and then click on it under page</string>
+    <string name="hint_enter_login">Enter login</string>
+    <string name="hint_enter_password">Enter password</string>
+    <string name="click_word">Click word to translate</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
 </resources>

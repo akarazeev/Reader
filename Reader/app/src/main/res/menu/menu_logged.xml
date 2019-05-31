@@ -2,16 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_open"
-        android:title="Open book"
-        app:showAsAction="never"/>
-
     <item android:id="@+id/action_settings"
-        android:title="Settings"
+        android:title="@string/settings"
         app:showAsAction="never"/>
 
     <item android:id="@+id/action_logout"
-        android:title="Logout"
+        android:title="@string/logout"
         app:showAsAction="never"/>
 
 </menu>

@@ -71,10 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "logout", Toast.LENGTH_LONG).show();
                 clickOnLogoutButton();
                 return true;
-            case R.id.action_open:
-                Toast.makeText(this, "open", Toast.LENGTH_LONG).show();
-                clickOnOpenButton();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
