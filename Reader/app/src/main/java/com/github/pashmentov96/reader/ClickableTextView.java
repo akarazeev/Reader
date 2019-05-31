@@ -1,7 +1,6 @@
 package com.github.pashmentov96.reader;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
@@ -11,10 +10,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ClickableTextView extends android.support.v7.widget.AppCompatTextView {
     public ClickableTextView(Context context) {

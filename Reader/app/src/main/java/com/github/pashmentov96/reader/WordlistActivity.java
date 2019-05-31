@@ -1,7 +1,5 @@
 package com.github.pashmentov96.reader;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
