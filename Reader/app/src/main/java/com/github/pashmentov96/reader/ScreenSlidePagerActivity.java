@@ -12,15 +12,18 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
-public class ScreenSlidePagerActivity extends AppCompatActivity {
+public class ScreenSlidePagerActivity extends AppCompatActivity implements View.OnClickListener {
     private ViewPager viewPager;
 
     private PagerAdapter pagerAdapter;
 
     String textOfBook;
     static final String ARGUMENT_TEXT = "argument_text";
+    TextView translationOfWord;
 
     int numPages;
 
@@ -28,6 +31,13 @@ public class ScreenSlidePagerActivity extends AppCompatActivity {
         Intent intent = new Intent(context, ScreenSlidePagerActivity.class);
         intent.putExtra(ARGUMENT_TEXT, text);
         return intent;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.traslationOfWord) {
+            Toast.makeText(v.getContext(), "Click on translationOfWord", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -40,6 +50,10 @@ public class ScreenSlidePagerActivity extends AppCompatActivity {
 
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
+
+        translationOfWord = findViewById(R.id.traslationOfWord);
+        translationOfWord.setOnClickListener(this);
+        ScreenSlidePageFragment.translationOfWord = translationOfWord;
 
         textOfBook = getIntent().getStringExtra(ARGUMENT_TEXT);
         numPages = (textOfBook.length() + 199) / 200;

@@ -17,7 +17,7 @@
         android:padding="16dp"
         android:text="Hello! My name is Nikita!"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/textOfTranslation"
+        app:layout_constraintBottom_toTopOf="@+id/clickedWord"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -30,15 +30,16 @@
         app:layout_constraintGuide_percent="0.9" />
 
     <TextView
-        android:id="@+id/textOfTranslation"
+        android:id="@+id/clickedWord"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:hint="Click word to translate"
+        android:hint="Click word"
         android:textAlignment="center"
         android:textSize="36sp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

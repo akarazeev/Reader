@@ -15,6 +15,7 @@ public class ScreenSlidePageFragment extends Fragment {
     static final String ARGUMENT_PAGE_TEXT = "arg_page_text";
     int pageNumber;
     String text;
+    static TextView translationOfWord;
 
     public static ScreenSlidePageFragment newInstance(int page, String textOfPage) {
         ScreenSlidePageFragment screenSlidePageFragment = new ScreenSlidePageFragment();
@@ -38,13 +39,16 @@ public class ScreenSlidePageFragment extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_screen_slide_page, container, false);
 
         ClickableTextView page = rootView.findViewById(R.id.textOfPage);
+
+        translationOfWord.setText("");
+
         page.setText(text);
 
         Log.d("Pages", pageNumber + ": " + text);
 
-        TextView textOfTranslation = rootView.findViewById(R.id.textOfTranslation);
+        TextView clickedWord = rootView.findViewById(R.id.clickedWord);
 
-        page.setTextWithAllWords(textOfTranslation);
+        page.setTextWithAllWords(clickedWord, translationOfWord);
 
         return rootView;
     }
