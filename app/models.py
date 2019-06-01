@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    words = db.relationship('VocabRecord', backref='author', lazy='dynamic')
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
 
@@ -42,6 +42,16 @@ class User(UserMixin, db.Model):
         if user is None or user.token_expiration < datetime.utcnow():
             return None
         return user
+
+
+class VocabRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    word = db.Column(db.String(140))
+    translation = db.Column(db.String(140))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<{} - {}>'.format(self.word, self.translation)
 
 
 class Post(db.Model):

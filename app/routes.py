@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import LoginForm, RegistrationForm
-from app.models import User
+from app.models import User, VocabRecord
 from googletrans import Translator
 from app.api.auth import token_auth
 
@@ -29,15 +29,12 @@ class UserData:
         if word in self.wordlist:
             self.wordlist.remove(word)
 
-    def translate(self, text):
-        res = self.translator.translate(text, dest='ru').text
-        return res
+
+translator = Translator()
 
 
-users = dict(test=UserData())
-username = 'test'
-users[username].add_word("one")
-users[username].add_word("superfluidity")
+def translate(text):
+    return translator.translate(text, dest='ru').text
 
 
 @app.route('/')
@@ -46,8 +43,10 @@ users[username].add_word("superfluidity")
 def index():
     text = "Superfluidity is the characteristic property of a fluid with zero viscosity which therefore flows without loss of kinetic energy. When stirred, a superfluid forms cellular vortices that continue to rotate indefinitely. Superfluidity occurs in two isotopes of helium (helium-3 and helium-4) when they are liquefied by cooling to cryogenic temperatures. It is also a property of various other exotic states of matter theorized to exist in astrophysics, high-energy physics, and theories of quantum gravity.[1] The phenomenon is related to Bose–Einstein condensation, but neither is a specific type of the other: not all Bose-Einstein condensates can be regarded as superfluids, and not all superfluids are Bose–Einstein condensates.[2] The theory of superfluidity was developed by Lev Landau. Superfluidity was originally discovered in liquid helium, by Pyotr Kapitsa and John F. Allen. It has since been described through phenomenology and microscopic theories. In liquid helium-4, the superfluidity occurs at far higher temperatures than it does in helium-3. Each atom of helium-4 is a boson particle, by virtue of its integer spin. A helium-3 atom is a fermion particle; it can form bosons only by pairing with itself at much lower temperatures. The discovery of superfluidity in helium-3 was the basis for the award of the 1996 Nobel Prize in Physics.[1] This process is similar to the electron pairing in superconductivity."
 
+    username = current_user.username
+
     # Sentence translation.
-    translated = users[username].translate(text)
+    translated = translate(text)
     text_sentences = text.split('.')
     translated_sentences = translated.split('.')
     res = [{"text_sentence": x + '.'} for x in text_sentences]
@@ -55,7 +54,9 @@ def index():
         res[i]['translated_sentence'] = translated_sentences[i]
 
     # Words highlightning.
-    words_to_highlight = users[username].wordlist
+    user = User.query.filter_by(username=username).first()
+    wordlist = user.words.all()
+    words_to_highlight = [x.word for x in wordlist]
     words_to_highlight = [x.lower() for x in words_to_highlight]
     for i in range(len(res)):
         sentence_words = res[i]['text_sentence'].split()
@@ -77,7 +78,8 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        username = form.username.data
+        user = User(username=username, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -115,27 +117,42 @@ def logout():
 @app.route('/api/add/<word>', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_add(word):
-    users[username].add_word(word)
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+
+    vocab_record = VocabRecord(word=word, translation=translate(word), author=user)
+    db.session.add(vocab_record)
+    db.session.commit()
     return word
 
 
 @app.route('/api/remove/<word>', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_remove(word):
-    users[username].remove_word(word)
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+
+    vocab_record = VocabRecord.query.filter_by(word=word, author=user)
+    for i in vocab_record:
+        db.session.delete(i)
+    db.session.commit()
     return word
 
 
 @app.route('/api/wordlist', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_wordlist():
-    wordlist = users[username].wordlist
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+    wordlist = user.words.all()
+    wordlist = [x.word for x in wordlist]
     wordlist = sorted(wordlist)
 
     if len(wordlist) == 0:
         res = dict()
     else:
-        translations = [users[username].translations[x] for x in wordlist]
+        # TODO:
+        translations = [x for x in wordlist]
         res = dict(zip(wordlist, translations))
     res = jsonify(res)
     return res
@@ -146,14 +163,26 @@ def api_wordlist():
 @app.route('/reading/add/<word>', methods=['GET', 'POST'])
 @login_required
 def reading_add(word):
-    users[username].add_word(word)
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+
+    vocab_record = VocabRecord(word=word, translation=translate(word), author=user)
+    db.session.add(vocab_record)
+    db.session.commit()
     return redirect(url_for("index"))
 
 
 @app.route('/reading/remove/<word>', methods=['GET', 'POST'])
 @login_required
 def reading_remove(word):
-    users[username].remove_word(word)
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+
+    vocab_record = VocabRecord.query.filter_by(word=word, author=user)
+    print(vocab_record)
+    for i in vocab_record:
+        db.session.delete(i)
+    db.session.commit()
     return redirect(url_for("index"))
 
 
@@ -169,7 +198,14 @@ def web_wordlist():
 @app.route('/remove/<word>', methods=['GET', 'POST'])
 @login_required
 def web_remove(word):
-    api_remove(word)
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+
+    vocab_record = VocabRecord.query.filter_by(word=word, author=user)
+    for i in vocab_record:
+        db.session.delete(i)
+    db.session.commit()
+
     web_wordlist()
     return redirect(url_for("web_wordlist"))
 
@@ -177,13 +213,17 @@ def web_remove(word):
 # Utils.
 
 def prepare_vocab():
-    wordlist = users[username].wordlist
+    username = current_user.username
+    user = User.query.filter_by(username=username).first()
+    wordlist = user.words.all()
+    wordlist = [x.word for x in wordlist]
     wordlist = sorted(wordlist)
 
     if len(wordlist) == 0:
         res = None
     else:
-        translations = [users[username].translations[x] for x in wordlist]
+        # TODO:
+        translations = [x for x in wordlist]
         res = list(zip(wordlist, translations))
 
     return res
