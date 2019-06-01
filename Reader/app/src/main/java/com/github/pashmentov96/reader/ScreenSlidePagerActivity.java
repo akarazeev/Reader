@@ -48,7 +48,7 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
                 new AsyncTask<Void, Void, Void>() {
                     @Override
                     protected void onPostExecute(Void aVoid) {
-                        Toast.makeText(v.getContext(), clickedWord + " added to your wordlist", Toast.LENGTH_LONG).show();
+                        Toast.makeText(v.getContext(), clickedWord + " " + getResources().getString(R.string.added_to_wordlist), Toast.LENGTH_LONG).show();
                     }
 
                     @Override
