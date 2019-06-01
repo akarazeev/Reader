@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, jsonify, url_for, request, abort
+from flask import render_template, flash, redirect, jsonify, url_for, request, g
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
@@ -6,28 +6,6 @@ from app.forms import LoginForm, RegistrationForm
 from app.models import User, VocabRecord
 from googletrans import Translator
 from app.api.auth import token_auth
-
-
-class UserData:
-    def __init__(self):
-        self.wordlist = list()
-        self.translations = dict()
-        self.translator = Translator()
-
-    def add_word(self, word):
-        if word[0].isupper() == False:
-            word = word.capitalize()
-
-        if word not in self.wordlist:
-            self.wordlist.append(word)
-            self.translations[word] = self.translate(word)
-
-    def remove_word(self, word):
-        if word[0].isupper() == False:
-            word = word.capitalize()
-
-        if word in self.wordlist:
-            self.wordlist.remove(word)
 
 
 translator = Translator()
@@ -117,10 +95,13 @@ def logout():
 @app.route('/api/add/<word>', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_add(word):
-    username = current_user.username
+    username = g.current_user.username
     user = User.query.filter_by(username=username).first()
 
-    vocab_record = VocabRecord(word=word, translation=translate(word), author=user)
+    if word[0].isupper() == False:
+        word = word.capitalize()
+    translation = translate(word)
+    vocab_record = VocabRecord(word=word, translation=translation, author=user)
     db.session.add(vocab_record)
     db.session.commit()
     return word
@@ -129,9 +110,11 @@ def api_add(word):
 @app.route('/api/remove/<word>', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_remove(word):
-    username = current_user.username
+    username = g.current_user.username
     user = User.query.filter_by(username=username).first()
 
+    if word[0].isupper() == False:
+        word = word.capitalize()
     vocab_record = VocabRecord.query.filter_by(word=word, author=user)
     for i in vocab_record:
         db.session.delete(i)
@@ -142,18 +125,9 @@ def api_remove(word):
 @app.route('/api/wordlist', methods=['GET', 'POST'])
 @token_auth.login_required
 def api_wordlist():
-    username = current_user.username
-    user = User.query.filter_by(username=username).first()
-    wordlist = user.words.all()
-    wordlist = [x.word for x in wordlist]
-    wordlist = sorted(wordlist)
-
-    if len(wordlist) == 0:
-        res = dict()
-    else:
-        # TODO:
-        translations = [x for x in wordlist]
-        res = dict(zip(wordlist, translations))
+    username = g.current_user.username
+    res = prepare_vocab(username=username)
+    res = dict(res)
     res = jsonify(res)
     return res
 
@@ -166,7 +140,10 @@ def reading_add(word):
     username = current_user.username
     user = User.query.filter_by(username=username).first()
 
-    vocab_record = VocabRecord(word=word, translation=translate(word), author=user)
+    if word[0].isupper() == False:
+        word = word.capitalize()
+    translation = translate(word)
+    vocab_record = VocabRecord(word=word, translation=translation, author=user)
     db.session.add(vocab_record)
     db.session.commit()
     return redirect(url_for("index"))
@@ -178,8 +155,9 @@ def reading_remove(word):
     username = current_user.username
     user = User.query.filter_by(username=username).first()
 
+    if word[0].isupper() == False:
+        word = word.capitalize()
     vocab_record = VocabRecord.query.filter_by(word=word, author=user)
-    print(vocab_record)
     for i in vocab_record:
         db.session.delete(i)
     db.session.commit()
@@ -201,6 +179,8 @@ def web_remove(word):
     username = current_user.username
     user = User.query.filter_by(username=username).first()
 
+    if word[0].isupper() == False:
+        word = word.capitalize()
     vocab_record = VocabRecord.query.filter_by(word=word, author=user)
     for i in vocab_record:
         db.session.delete(i)
@@ -212,18 +192,16 @@ def web_remove(word):
 
 # Utils.
 
-def prepare_vocab():
-    username = current_user.username
+def prepare_vocab(username=None):
+    if username is None:
+        username = current_user.username
     user = User.query.filter_by(username=username).first()
     wordlist = user.words.all()
-    wordlist = [x.word for x in wordlist]
-    wordlist = sorted(wordlist)
 
     if len(wordlist) == 0:
         res = None
     else:
-        # TODO:
-        translations = [x for x in wordlist]
-        res = list(zip(wordlist, translations))
+        res = [(x.word, x.translation) for x in wordlist]
+        res = sorted(res, key=lambda x: x[0])
 
     return res
