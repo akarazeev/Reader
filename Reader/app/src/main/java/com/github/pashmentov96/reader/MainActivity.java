@@ -5,6 +5,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,9 +29,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.TOCReference;
@@ -61,14 +63,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Toast.makeText(this, "settings", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case R.id.action_login:
-                Toast.makeText(this, "login", Toast.LENGTH_LONG).show();
                 clickOnLoginButton();
                 return true;
             case R.id.action_logout:
-                Toast.makeText(this, "logout", Toast.LENGTH_LONG).show();
                 clickOnLogoutButton();
                 return true;
             default:
@@ -91,12 +91,12 @@ public class MainActivity extends AppCompatActivity {
     private void clickOnOpenButton() {
         SomePreferences somePreferences = new SomePreferences(this);
         if (somePreferences.getVariableIsLogged() == 0) {
-            Toast.makeText(this, "You should be logged to open book", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getResources().getString(R.string.must_be_logged_book), Toast.LENGTH_LONG).show();
         } else {
             Intent intent = new Intent();
             intent.setType("application/epub+zip");
             intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent, "Choose file to open"), PICK_FILE_REQUEST);
+            startActivityForResult(Intent.createChooser(intent, getResources().getString(R.string.choose_file)), PICK_FILE_REQUEST);
         }
     }
 
@@ -104,9 +104,27 @@ public class MainActivity extends AppCompatActivity {
     private void clickOnWordlistButton(View view) {
         SomePreferences somePreferences = new SomePreferences(this);
         if (somePreferences.getVariableIsLogged() == 0) {
-            Toast.makeText(this, "You should be logged to open your wordlist", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getResources().getString(R.string.must_be_logged_wordlist), Toast.LENGTH_LONG).show();
         } else {
             startActivity(new Intent(this, WordlistActivity.class));
+        }
+    }
+
+    public void setLocale(String localeName) {
+        SomePreferences somePreferences = new SomePreferences(this);
+        String prevLocale = getResources().getConfiguration().locale.toString();
+        if (prevLocale.contains("en")) {
+            prevLocale = "en";
+        }
+        if (!localeName.equals(prevLocale)) {
+            Locale myLocale = new Locale(localeName);
+            Resources res = getResources();
+            DisplayMetrics dm = res.getDisplayMetrics();
+            Configuration conf = res.getConfiguration();
+            conf.setLocale(myLocale);
+            res.updateConfiguration(conf, dm);
+            somePreferences.setVariableLanguage(localeName);
+            recreate();
         }
     }
 
@@ -116,6 +134,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         SomePreferences somePreferences = new SomePreferences(this);
+
+        Log.d("MyLogs", "Language = " + somePreferences.getVariableLanguage());
+
+        Log.d("MyLogs", "Locale = " + getResources().getConfiguration().locale);
+        Log.d("MyLogs", "User's locale = " + (new Locale(somePreferences.getVariableLanguage())));
+        setLocale(somePreferences.getVariableLanguage());
 
         Log.d("MyLogs", "IsLogged = " + somePreferences.getVariableIsLogged());
 
