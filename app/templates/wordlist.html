@@ -1,0 +1,13 @@
+{% if vocab %}
+    {% for word, translation in vocab %}
+        <div>
+            <p>
+                <b>{{ word }}</b> &mdash; {{ translation }} [<a href="/remove/{{ word }}">remove</a>]
+            </p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>
+        <b>There are no words</b>
+    </p>
+{% endif %}

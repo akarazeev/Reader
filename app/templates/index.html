@@ -1,8 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hi, {{ user.username }}!</h1>
     {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+        <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
     {% endfor %}
+
+    {% if res %}
+        <h3>Пример текста</h3>
+        {% for sentence in res %}
+            <sentence title="{{ sentence.translated_sentence }}">
+                {% for word, highlight in sentence.sentence_words %}
+                    {% if highlight == 1 %}
+                        <a class="text_highlighted" href="/reading/remove/{{ word }}">{{ word }}</a>
+                    {% else %}
+                        <a class="text" href="/reading/add/{{ word }}">{{ word }}</a>
+                    {% endif %}
+                {% endfor %}
+            </sentence>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <h3>Список слов</h3>
+
+    {% include "wordlist.html" %}
 {% endblock %}
