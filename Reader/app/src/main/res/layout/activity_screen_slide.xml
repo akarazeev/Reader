@@ -47,6 +47,7 @@
         android:layout_marginBottom="8dp"
         android:hint="@string/click_word"
         android:textAlignment="center"
+        android:textColor="@color/black"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

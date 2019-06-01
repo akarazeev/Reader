@@ -21,4 +21,13 @@
     <string name="choose_file">Choose file to open</string>
     <string name="must_be_logged_book">You should be logged to open books</string>
     <string name="added_to_wordlist">added to your wordlist</string>
+    <string name="about">About app</string>
+    <string name="about_text">This application helps you to read e-books on English language.
+        You can know the translation of each word by clicking on desired word. Also it is available to add unknown words to your wordlist.
+        \nAvailable formats of books: epub</string>
+    <string name="about_developers">Developers are 4th year students at MIPT:
+        \n-Karazeev Anton
+        \n-Pashmentov Nikita
+    </string>
+    <string name="about_site">Also try our <a href="http://d6719ff8.ngrok.io">site</a></string>
 </resources>

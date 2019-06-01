@@ -16,6 +16,7 @@
         android:lineSpacingMultiplier="1.2"
         android:padding="16dp"
         android:text="Hello! My name is Nikita!"
+        android:textColor="@color/black"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

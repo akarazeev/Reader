@@ -65,6 +65,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="36dp"
         android:text="@string/no_registration"
+        android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"

@@ -71,9 +71,17 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_logout:
                 clickOnLogoutButton();
                 return true;
+            case R.id.action_about:
+                clickOnAboutButton();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void clickOnAboutButton() {
+        Intent intent = new Intent(this, AboutActivity.class);
+        startActivity(intent);
     }
 
     private void clickOnLoginButton() {

@@ -36,6 +36,7 @@
         android:layout_marginEnd="8dp"
         android:text="@string/language"
         android:textAlignment="center"
+        android:textColor="@color/black"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"

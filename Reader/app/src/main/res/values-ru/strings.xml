@@ -22,4 +22,13 @@
     <string name="choose_file">Выберете файл</string>
     <string name="must_be_logged_book">Войдите в аккаунт, чтобы открыть книгу!</string>
     <string name="added_to_wordlist">добавлено в Ваш словарь</string>
+    <string name="about">О приложении</string>
+    <string name="about_text">Это приложение поможет Вам при чтении электронных книг на английском языке.
+        Вы можете узнать перевод каждого слова, кликнув на нужное слово. Также доступно добавление незнакомых слов в личный словарь.
+        \nДоступные форматы книг: epub</string>
+    <string name="about_developers">Разработчики - студенты 4-го курса МФТИ:
+        \n-Каразеев Антон
+        \n-Пашментов Никита
+    </string>
+    <string name="about_site">Также можете попробовать наш <a href="http://d6719ff8.ngrok.io">сайт</a></string>
 </resources>
