@@ -31,4 +31,5 @@
         \n-Пашментов Никита
     </string>
     <string name="about_site">Также можете попробовать наш <a href="http://d6719ff8.ngrok.io">сайт</a></string>
+    <string name="recent_books">Недавние книги</string>
 </resources>
