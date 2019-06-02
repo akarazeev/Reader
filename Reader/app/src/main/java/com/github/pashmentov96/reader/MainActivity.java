@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -219,27 +220,17 @@ public class MainActivity extends AppCompatActivity {
                 String absolutePath = PathUtils.getPath(this, selectedFileUri);
                 Log.d("MyLogs", "Absolute path: " + absolutePath);
 
-                EpubReader epubReader = new EpubReader();
-                Book book = null;
-                try {
-                    book = epubReader.readEpub(new FileInputStream(absolutePath));
-                } catch (IOException e) {
-                    Log.e("MyLogs", e.getMessage());
-                }
 
+                WorkerTextOfBook workerTextOfBook = new WorkerTextOfBook();
+                Pair<String, String> book = workerTextOfBook.getTextOfBook(absolutePath);
                 if (book != null) {
-                    Log.d("MyLogs", book.getTitle());
-                    Log.d("MyLogs", "Metadata: " + book.getMetadata().getTitles());
+                    textOfBook = book.second;
+                    String title = book.first;
 
-                    List<String> titles = book.getMetadata().getTitles();
-                    if (titles.size() == 0) {
-                        titles.add("Without name");
-                    }
-                    BookInfo bookInfo = new BookInfo(absolutePath, titles.get(0), 0);
+                    BookInfo bookInfo = new BookInfo(absolutePath, title, 0);
                     WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
                     workerOpenedBooks.addBook(this, bookInfo);
 
-                    logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
                     startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
                 }
             }
@@ -252,35 +243,6 @@ public class MainActivity extends AppCompatActivity {
                 somePreferences.setToken(data.getStringExtra("token"));
                 recreate();
             }
-        }
-    }
-
-    private void logTableOfContents(List<TOCReference> tocReferences, int depth) {
-        if (tocReferences == null) {
-            return;
-        }
-        for (TOCReference tocReference : tocReferences) {
-            StringBuilder tocString = new StringBuilder();
-            for (int i = 0; i < depth; i++) {
-                tocString.append("\t");
-            }
-            try{
-                InputStream is = tocReference.getResource().getInputStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                String line;
-                StringBuilder stringBuilder = new StringBuilder();
-                while ((line = r.readLine()) != null) {
-                    line = Html.fromHtml(line).toString();
-                    stringBuilder.append(line + " ");
-                    Log.d("Book", line);
-                }
-                textOfBook = stringBuilder.toString();
-            }
-            catch(IOException e){
-
-            }
-
-            //logTableOfContents(tocReference.getChildren(), depth + 1);
         }
     }
 
