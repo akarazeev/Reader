@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button buttonWordlist;
     Button buttonOpen;
+    Button buttonRecentBooks;
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
@@ -108,6 +109,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void clickOnRecentBooksButton() {
+        WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
+        List<BookInfo> history = workerOpenedBooks.parseHistoryFromJsom(this);
+        for (BookInfo book: history) {
+            Log.d("history", book.toString());
+        }
+    }
+
     @SuppressLint("StaticFieldLeak")
     private void clickOnWordlistButton(View view) {
         SomePreferences somePreferences = new SomePreferences(this);
@@ -162,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
         buttonWordlist = findViewById(R.id.button_wordlist);
         buttonOpen = findViewById(R.id.button_open);
+        buttonRecentBooks = findViewById(R.id.buttonRecentBooks);
 
         @SuppressLint("StaticFieldLeak")
         View.OnClickListener onClickButtonWordlist = new View.OnClickListener() {
@@ -170,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                 clickOnWordlistButton(v);
             }
         };
-
         buttonWordlist.setOnClickListener(onClickButtonWordlist);
 
         View.OnClickListener onClickButtonOpen = new View.OnClickListener() {
@@ -180,8 +189,15 @@ public class MainActivity extends AppCompatActivity {
                 clickOnOpenButton();
             }
         };
-
         buttonOpen.setOnClickListener(onClickButtonOpen);
+
+        final View.OnClickListener onClickButtonRecentBooks = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickOnRecentBooksButton();
+            }
+        };
+        buttonRecentBooks.setOnClickListener(onClickButtonRecentBooks);
     }
 
     @Override
@@ -213,9 +229,15 @@ public class MainActivity extends AppCompatActivity {
 
                 if (book != null) {
                     Log.d("MyLogs", book.getTitle());
-                    Log.d("MyLogs", "Metadata: " + book.getMetadata().getPublishers());
-                    Log.d("MyLogs", String.valueOf(book.getTableOfContents().size()));
-                    Log.d("MyLogs", String.valueOf(book.getContents().size()));
+                    Log.d("MyLogs", "Metadata: " + book.getMetadata().getTitles());
+
+                    List<String> titles = book.getMetadata().getTitles();
+                    if (titles.size() == 0) {
+                        titles.add("Without name");
+                    }
+                    BookInfo bookInfo = new BookInfo(absolutePath, titles.get(0), 0);
+                    WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
+                    workerOpenedBooks.addBook(this, bookInfo);
 
                     logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
                     startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
