@@ -30,6 +30,23 @@ public class WorkerOpenedBooks {
         return history;
     }
 
+    public void changePage(Context context, int page) {
+        SomePreferences somePreferences = new SomePreferences(context);
+        String json = somePreferences.getVariableHistory();
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray jsonArray = jsonObject.getJSONArray("books");
+            JSONObject lastBook = jsonArray.getJSONObject(0);
+            jsonArray.remove(0);
+            lastBook.put("page", page);
+            jsonArray.put(0, lastBook);
+            jsonObject.put("books", jsonArray);
+            somePreferences.setVariableHistory(jsonObject.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getJsonFromHistory(List<BookInfo> history) {
         JSONObject json = new JSONObject();
         JSONArray jsonArray = new JSONArray();
@@ -52,7 +69,7 @@ public class WorkerOpenedBooks {
         return json.toString();
     }
 
-    public void addBook(Context context, BookInfo book) {
+    public int addBook(Context context, BookInfo book) {
         List<BookInfo> history = parseHistoryFromJsom(context);
         int position = -1;
         for (int i = 0; i < history.size(); ++i) {
@@ -63,6 +80,7 @@ public class WorkerOpenedBooks {
             }
         }
         if (position != -1) {
+            book.page = history.get(position).page;
             history.remove(position);
         }
         history.add(0, book);
@@ -70,6 +88,7 @@ public class WorkerOpenedBooks {
 
         SomePreferences somePreferences = new SomePreferences(context);
         somePreferences.setVariableHistory(json);
+        return book.page;
     }
 
 }

@@ -25,17 +25,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Locale;
-
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.domain.TOCReference;
-import nl.siegmann.epublib.epub.EpubReader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -203,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == PICK_FILE_REQUEST) {
                 if (data == null) {
@@ -229,9 +219,9 @@ public class MainActivity extends AppCompatActivity {
 
                     BookInfo bookInfo = new BookInfo(absolutePath, title, 0);
                     WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
-                    workerOpenedBooks.addBook(this, bookInfo);
+                    int page = workerOpenedBooks.addBook(this, bookInfo);
 
-                    startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
+                    startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook, page));
                 }
             }
             if (requestCode == OPEN_LOGIN_ACTIVITY) {
