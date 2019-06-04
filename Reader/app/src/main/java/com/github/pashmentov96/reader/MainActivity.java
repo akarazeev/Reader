@@ -102,15 +102,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clickOnRecentBooksButton() {
-        WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
+        /*WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
         List<BookInfo> history = workerOpenedBooks.parseHistoryFromJsom(this);
+        int i = 0;
         for (BookInfo book: history) {
-            Log.d("history", book.toString());
-        }
+            Log.d("history", i + ": " + book.toString());
+            i++;
+        }*/
+        startActivity(new Intent(this, BookListActivity.class));
     }
 
     @SuppressLint("StaticFieldLeak")
-    private void clickOnWordlistButton(View view) {
+    private void clickOnWordlistButton() {
         SomePreferences somePreferences = new SomePreferences(this);
         if (somePreferences.getVariableIsLogged() == 0) {
             Toast.makeText(this, getResources().getString(R.string.must_be_logged_wordlist), Toast.LENGTH_LONG).show();
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         View.OnClickListener onClickButtonWordlist = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clickOnWordlistButton(v);
+                clickOnWordlistButton();
             }
         };
         buttonWordlist.setOnClickListener(onClickButtonWordlist);
