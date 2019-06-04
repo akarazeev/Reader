@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkerOpenedBooks {
+public class WorkerHistory {
 
     public List<BookInfo> parseHistoryFromJsom(Context context) {
         SomePreferences somePreferences = new SomePreferences(context);
