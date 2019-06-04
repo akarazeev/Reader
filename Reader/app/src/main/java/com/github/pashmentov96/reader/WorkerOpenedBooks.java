@@ -15,6 +15,7 @@ public class WorkerOpenedBooks {
     public List<BookInfo> parseHistoryFromJsom(Context context) {
         SomePreferences somePreferences = new SomePreferences(context);
         String json = somePreferences.getVariableHistory();
+        Log.d("history", "JSON parse = " + json);
         List<BookInfo> history = new ArrayList<>();
 
         try {
@@ -33,15 +34,17 @@ public class WorkerOpenedBooks {
     public void changePage(Context context, int page) {
         SomePreferences somePreferences = new SomePreferences(context);
         String json = somePreferences.getVariableHistory();
+        Log.d("history", "JSON change = " + json);
         try {
             JSONObject jsonObject = new JSONObject(json);
             JSONArray jsonArray = jsonObject.getJSONArray("books");
             JSONObject lastBook = jsonArray.getJSONObject(0);
-            jsonArray.remove(0);
+            lastBook.remove("page");
             lastBook.put("page", page);
             jsonArray.put(0, lastBook);
             jsonObject.put("books", jsonArray);
             somePreferences.setVariableHistory(jsonObject.toString());
+            Log.d("history", "JSON change = " + json);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -88,6 +91,7 @@ public class WorkerOpenedBooks {
 
         SomePreferences somePreferences = new SomePreferences(context);
         somePreferences.setVariableHistory(json);
+        Log.d("history", "add " + json);
         return book.page;
     }
 
