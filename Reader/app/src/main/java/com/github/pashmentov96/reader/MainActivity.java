@@ -14,9 +14,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,22 +24,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 import java.util.Locale;
-
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.domain.TOCReference;
-import nl.siegmann.epublib.epub.EpubReader;
 
 public class MainActivity extends AppCompatActivity {
 
     Button buttonWordlist;
     Button buttonOpen;
+    Button buttonRecentBooks;
 
     final int PICK_FILE_REQUEST = 10;
     final int REQUEST_READ_EXTERNAL_STORAGE = 5;
@@ -108,8 +99,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void clickOnRecentBooksButton() {
+        /*WorkerHistory workerOpenedBooks = new WorkerHistory();
+        List<BookInfo> history = workerOpenedBooks.parseHistoryFromJsom(this);
+        int i = 0;
+        for (BookInfo book: history) {
+            Log.d("history", i + ": " + book.toString());
+            i++;
+        }*/
+        startActivity(new Intent(this, BookListActivity.class));
+    }
+
     @SuppressLint("StaticFieldLeak")
-    private void clickOnWordlistButton(View view) {
+    private void clickOnWordlistButton() {
         SomePreferences somePreferences = new SomePreferences(this);
         if (somePreferences.getVariableIsLogged() == 0) {
             Toast.makeText(this, getResources().getString(R.string.must_be_logged_wordlist), Toast.LENGTH_LONG).show();
@@ -162,15 +164,15 @@ public class MainActivity extends AppCompatActivity {
 
         buttonWordlist = findViewById(R.id.button_wordlist);
         buttonOpen = findViewById(R.id.button_open);
+        buttonRecentBooks = findViewById(R.id.buttonRecentBooks);
 
         @SuppressLint("StaticFieldLeak")
         View.OnClickListener onClickButtonWordlist = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clickOnWordlistButton(v);
+                clickOnWordlistButton();
             }
         };
-
         buttonWordlist.setOnClickListener(onClickButtonWordlist);
 
         View.OnClickListener onClickButtonOpen = new View.OnClickListener() {
@@ -180,13 +182,19 @@ public class MainActivity extends AppCompatActivity {
                 clickOnOpenButton();
             }
         };
-
         buttonOpen.setOnClickListener(onClickButtonOpen);
+
+        final View.OnClickListener onClickButtonRecentBooks = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickOnRecentBooksButton();
+            }
+        };
+        buttonRecentBooks.setOnClickListener(onClickButtonRecentBooks);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == PICK_FILE_REQUEST) {
                 if (data == null) {
@@ -203,23 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 String absolutePath = PathUtils.getPath(this, selectedFileUri);
                 Log.d("MyLogs", "Absolute path: " + absolutePath);
 
-                EpubReader epubReader = new EpubReader();
-                Book book = null;
-                try {
-                    book = epubReader.readEpub(new FileInputStream(absolutePath));
-                } catch (IOException e) {
-                    Log.e("MyLogs", e.getMessage());
-                }
-
-                if (book != null) {
-                    Log.d("MyLogs", book.getTitle());
-                    Log.d("MyLogs", "Metadata: " + book.getMetadata().getPublishers());
-                    Log.d("MyLogs", String.valueOf(book.getTableOfContents().size()));
-                    Log.d("MyLogs", String.valueOf(book.getContents().size()));
-
-                    logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
-                    startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook));
-                }
+                openBook(absolutePath);
             }
             if (requestCode == OPEN_LOGIN_ACTIVITY) {
                 if (data == null) {
@@ -233,32 +225,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void logTableOfContents(List<TOCReference> tocReferences, int depth) {
-        if (tocReferences == null) {
-            return;
-        }
-        for (TOCReference tocReference : tocReferences) {
-            StringBuilder tocString = new StringBuilder();
-            for (int i = 0; i < depth; i++) {
-                tocString.append("\t");
-            }
-            try{
-                InputStream is = tocReference.getResource().getInputStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                String line;
-                StringBuilder stringBuilder = new StringBuilder();
-                while ((line = r.readLine()) != null) {
-                    line = Html.fromHtml(line).toString();
-                    stringBuilder.append(line + " ");
-                    Log.d("Book", line);
-                }
-                textOfBook = stringBuilder.toString();
-            }
-            catch(IOException e){
+    public void openBook(String path) {
+        WorkerTextOfBook workerTextOfBook = new WorkerTextOfBook();
+        Pair<String, String> book = workerTextOfBook.getTextOfBook(path);
+        if (book != null) {
+            String textOfBook = book.second;
+            String title = book.first;
 
-            }
+            BookInfo bookInfo = new BookInfo(path, title, 0);
+            WorkerHistory workerHistory = new WorkerHistory();
+            int page = workerHistory.addBook(this, bookInfo);
 
-            //logTableOfContents(tocReference.getChildren(), depth + 1);
+            startActivity(ScreenSlidePagerActivity.getIntent(this, textOfBook, page));
         }
     }
 

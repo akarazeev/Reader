@@ -13,6 +13,8 @@ public class SomePreferences {
 
     private static final String VARIABLE_LANGUAGE = "language";
 
+    private static final String VARIABLE_HISTORY = "history of opened books";
+
     private SharedPreferences sharedPreferences;
 
     public SomePreferences(Context context) {
@@ -41,6 +43,14 @@ public class SomePreferences {
 
     public void setVariableLanguage(String language) {
         sharedPreferences.edit().putString(VARIABLE_LANGUAGE, language).apply();
+    }
+
+    public void setVariableHistory(String history) {
+        sharedPreferences.edit().putString(VARIABLE_HISTORY, history).apply();
+    }
+
+    public String getVariableHistory() {
+        return sharedPreferences.getString(VARIABLE_HISTORY, "{\"books\": []}");
     }
 
 

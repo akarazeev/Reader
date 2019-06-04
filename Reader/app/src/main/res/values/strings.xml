@@ -30,4 +30,5 @@
         \n-Pashmentov Nikita
     </string>
     <string name="about_site">Also try our <a href="http://d6719ff8.ngrok.io">site</a></string>
+    <string name="recent_books">Recent books</string>
 </resources>

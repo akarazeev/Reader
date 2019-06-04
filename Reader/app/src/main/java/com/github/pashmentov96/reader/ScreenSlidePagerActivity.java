@@ -2,7 +2,6 @@ package com.github.pashmentov96.reader;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,15 +28,17 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
 
     String textOfBook;
     static final String ARGUMENT_TEXT = "argument_text";
+    static final String ARGUMENT_PAGE = "argument_page";
     TextView translationOfWord;
 
     int numPages;
 
     public static String clickedWord;
 
-    public static Intent getIntent(Context context, String text) {
+    public static Intent getIntent(Context context, String text, int page) {
         Intent intent = new Intent(context, ScreenSlidePagerActivity.class);
         intent.putExtra(ARGUMENT_TEXT, text);
+        intent.putExtra(ARGUMENT_PAGE, page);
         return intent;
     }
 
@@ -106,6 +107,7 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
 
+        viewPager.setCurrentItem(getIntent().getIntExtra(ARGUMENT_PAGE, 0));
     }
 
     @Override
@@ -144,4 +146,23 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
         }
     }
 
+    @Override
+    protected void onStop() {
+        Log.d("life_cycle", "onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        WorkerHistory workerHistory = new WorkerHistory();
+        workerHistory.changePage(this, viewPager.getCurrentItem());
+        Log.d("life_cycle", "onPause " + viewPager.getCurrentItem());
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("life_cycle", "onDestroy");
+        super.onDestroy();
+    }
 }
