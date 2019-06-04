@@ -2,7 +2,6 @@ package com.github.pashmentov96.reader;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -155,8 +154,8 @@ public class ScreenSlidePagerActivity extends AppCompatActivity implements View.
 
     @Override
     protected void onPause() {
-        WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
-        workerOpenedBooks.changePage(this, viewPager.getCurrentItem());
+        WorkerHistory workerHistory = new WorkerHistory();
+        workerHistory.changePage(this, viewPager.getCurrentItem());
         Log.d("life_cycle", "onPause " + viewPager.getCurrentItem());
         super.onPause();
     }

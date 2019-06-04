@@ -5,11 +5,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.util.Pair;
 
 import java.util.List;
 
-public class BookListActivity extends AppCompatActivity {
+public class BookListActivity extends AppCompatActivity implements ViewHolderListener {
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,9 +25,29 @@ public class BookListActivity extends AppCompatActivity {
         BookAdapter adapter = new BookAdapter();
         recyclerView.setAdapter(adapter);
 
-        WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
-        List<BookInfo> history = workerOpenedBooks.parseHistoryFromJsom(this);
+        WorkerHistory workerHistory = new WorkerHistory();
+        List<BookInfo> history = workerHistory.parseHistoryFromJsom(this);
 
-        adapter.setBookList(history);
+        adapter.setBookList(history, this);
+    }
+
+    @Override
+    public void onBookClicked(String path) {
+        openBook(path);
+    }
+
+    public void openBook(String path) {
+        WorkerTextOfBook workerTextOfBook = new WorkerTextOfBook();
+        Pair<String, String> book = workerTextOfBook.getTextOfBook(path);
+        if (book != null) {
+            String textOfBook = book.second;
+            String title = book.first;
+
+            BookInfo bookInfo = new BookInfo(path, title, 0);
+            WorkerHistory workerHistory = new WorkerHistory();
+            int page = workerHistory.addBook(this, bookInfo);
+
+            startActivity(ScreenSlidePagerActivity.getIntent(this, textOfBook, page));
+        }
     }
 }

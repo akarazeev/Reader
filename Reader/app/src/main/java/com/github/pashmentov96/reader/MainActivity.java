@@ -14,7 +14,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
@@ -25,7 +24,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -102,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clickOnRecentBooksButton() {
-        /*WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
+        /*WorkerHistory workerOpenedBooks = new WorkerHistory();
         List<BookInfo> history = workerOpenedBooks.parseHistoryFromJsom(this);
         int i = 0;
         for (BookInfo book: history) {
@@ -213,19 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 String absolutePath = PathUtils.getPath(this, selectedFileUri);
                 Log.d("MyLogs", "Absolute path: " + absolutePath);
 
-
-                WorkerTextOfBook workerTextOfBook = new WorkerTextOfBook();
-                Pair<String, String> book = workerTextOfBook.getTextOfBook(absolutePath);
-                if (book != null) {
-                    textOfBook = book.second;
-                    String title = book.first;
-
-                    BookInfo bookInfo = new BookInfo(absolutePath, title, 0);
-                    WorkerOpenedBooks workerOpenedBooks = new WorkerOpenedBooks();
-                    int page = workerOpenedBooks.addBook(this, bookInfo);
-
-                    startActivity(ScreenSlidePagerActivity.getIntent(MainActivity.this, textOfBook, page));
-                }
+                openBook(absolutePath);
             }
             if (requestCode == OPEN_LOGIN_ACTIVITY) {
                 if (data == null) {
@@ -236,6 +222,21 @@ public class MainActivity extends AppCompatActivity {
                 somePreferences.setToken(data.getStringExtra("token"));
                 recreate();
             }
+        }
+    }
+
+    public void openBook(String path) {
+        WorkerTextOfBook workerTextOfBook = new WorkerTextOfBook();
+        Pair<String, String> book = workerTextOfBook.getTextOfBook(path);
+        if (book != null) {
+            String textOfBook = book.second;
+            String title = book.first;
+
+            BookInfo bookInfo = new BookInfo(path, title, 0);
+            WorkerHistory workerHistory = new WorkerHistory();
+            int page = workerHistory.addBook(this, bookInfo);
+
+            startActivity(ScreenSlidePagerActivity.getIntent(this, textOfBook, page));
         }
     }
 
